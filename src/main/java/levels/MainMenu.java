@@ -10,12 +10,15 @@ import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.screen.Screen;
+import text.Texter;
 
 import java.awt.*;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class MainMenu extends Level {
     private Window window;
+    private final Texter texter = Texter.getTexter();
     public MainMenu(String lvlName) {
         super(lvlName);
     }
@@ -34,7 +37,20 @@ public class MainMenu extends Level {
         gridLayout.setHorizontalSpacing(10);
         gridLayout.setVerticalSpacing(10);
 
-        var titleLabel = new Label("LAST STAND");
+        String titleText = "";
+        try {
+            StringBuilder builder = new StringBuilder();
+            HashMap<String, String> text = texter.getText("title");
+            for(String line : text.values()) {
+                builder.insert(0, (line+"\n"));
+            }
+            titleText = builder.toString();
+        } catch (Exception e) {
+            System.out.println("Exception caught in while getting main menu text: " + e);
+        }
+
+        System.out.println(titleText);
+        var titleLabel = new Label(titleText);
         titleLabel.setBackgroundColor(TextColor.ANSI.BLUE);
 
 

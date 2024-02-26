@@ -1,29 +1,48 @@
 package text;
 
-import org.junit.Test;
-
 import java.io.*;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.regex.PatternSyntaxException;
 
 public class Texter {
-    Language langChoosed;
-    ClassLoader loader = this.getClass().getClassLoader();;
-    String delimiter = "`";
+    private static Texter texter;
+    private Language langChosen = Language.English;
+    private ClassLoader loader = this.getClass().getClassLoader();;
+    private String delimiter = "`";
+
+    private Texter() {}
+
+    public static Texter getTexter() {
+        if(texter != null) {
+            return texter;
+        }
+        texter = new Texter();
+        return texter;
+    }
     public Texter(Language lang) {
-        this.langChoosed = lang;
+        this.langChosen = lang;
+    }
+    public void setLanguage(Language lang) {
+        this.langChosen = lang;
     }
 
-    public HashMap<String, String> getText(String fileName) throws FileNotFoundException, IOException {
+    public HashMap<String, String> getText(String fileName) throws FileNotFoundException, IOException, FileNotFoundException {
         String path;
-        switch (langChoosed) {
+        switch (langChosen) {
             case Language.English -> path = "text/english/" + fileName + ".txt";
             default -> path = "text/english/" + fileName + ".txt";
         }
 
-        var reader = new BufferedReader(new InputStreamReader(loader.getResourceAsStream(path)));
+        if(fileName.equals("title")) {
+            path = "text/english/title.txt";
+        }
+
+        var stream = loader.getResourceAsStream(path);
+        if(stream == null) {
+            throw new FileNotFoundException();
+        }
+
+        var reader = new BufferedReader(new InputStreamReader(stream));
         HashMap<String, String> dict = new HashMap<String, String>();
         for(String line : reader.lines().toList()) {
             try {
@@ -35,6 +54,8 @@ public class Texter {
                 System.out.println("Error while indexing text : " + line);
             }
         }
+        reader.close();
+        stream.close();
         return dict;
     }
 }

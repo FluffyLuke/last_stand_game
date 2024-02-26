@@ -7,8 +7,8 @@ import java.util.regex.PatternSyntaxException;
 public class Texter {
     private static Texter texter;
     private Language langChosen = Language.English;
-    private ClassLoader loader = this.getClass().getClassLoader();;
-    private String delimiter = "`";
+    private final ClassLoader loader = this.getClass().getClassLoader();
+    private final String delimiter = "`";
 
     private Texter() {}
 
@@ -26,7 +26,7 @@ public class Texter {
         this.langChosen = lang;
     }
 
-    public HashMap<String, String> getText(String fileName) throws FileNotFoundException, IOException, FileNotFoundException {
+    public HashMap<String, String> getText(String fileName) throws IOException {
         String path;
         switch (langChosen) {
             case Language.English -> path = "text/english/" + fileName + ".txt";
@@ -43,7 +43,7 @@ public class Texter {
         }
 
         var reader = new BufferedReader(new InputStreamReader(stream));
-        HashMap<String, String> dict = new HashMap<String, String>();
+        HashMap<String, String> dict = new HashMap<>();
         for(String line : reader.lines().toList()) {
             try {
                 String[] kv = line.split(delimiter);

@@ -1,0 +1,3 @@
+difficulty_button`> set_difficulty <
+theme_button`> set_theme <
+save_button`> save_and_exit <

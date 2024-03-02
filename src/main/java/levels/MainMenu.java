@@ -7,6 +7,8 @@ import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.Window;
+import game.GameManager;
+import game.GameOptions;
 import text.Texter;
 
 import java.util.Collections;
@@ -51,7 +53,7 @@ public class MainMenu extends Level {
 
         System.out.println(titleText);
         var titleLabel = new Label(titleText);
-        titleLabel.setBackgroundColor(TextColor.ANSI.BLUE);
+        titleLabel.setTheme(GameOptions.getTheme());
 
         titleLabel.setLayoutData(GridLayout.createLayoutData(
                 GridLayout.Alignment.CENTER, // Horizontal alignment in the grid cell if the cell is larger than the component's preferred size
@@ -84,12 +86,16 @@ public class MainMenu extends Level {
         var buttonLayout = LinearLayout.createLayoutData(LinearLayout.Alignment.Center);
 
         Button button1 = new Button(mainMenuText.get("play_button"));
-        Button button2 = new Button(mainMenuText.get("options_button"));
+        Button button2 = new Button(mainMenuText.get("options_button"), new ChangeToOptions());
         Button button3 = new Button(mainMenuText.get("quit_button"), new Exit());
 
         button1.setLayoutData(buttonLayout);
         button2.setLayoutData(buttonLayout);
         button3.setLayoutData(buttonLayout);
+
+        button1.setTheme(GameOptions.getTheme());
+        button2.setTheme(GameOptions.getTheme());
+        button3.setTheme(GameOptions.getTheme());
 
         buttonPanel.addComponent(button1);
         buttonPanel.addComponent(button2);
@@ -105,11 +111,23 @@ public class MainMenu extends Level {
     public void close() {
         this.window.close();
     }
+
+    @Override
+    public void refresh() {
+        // TODO
+    }
 }
 
 class Exit implements Runnable {
     @Override
     public void run() {
         System.exit(0);
+    }
+}
+
+class ChangeToOptions implements Runnable {
+    @Override
+    public void run() {
+        GameManager.playLevel("Options");
     }
 }

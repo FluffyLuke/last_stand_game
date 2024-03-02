@@ -32,6 +32,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
+                    <include>text/english/options_menu.txt</include>
                     <include>text/english/main_menu.txt</include>
                     <include>text/english/test_text.txt</include>
                     <include>text/english/title.txt</include>

@@ -2,6 +2,7 @@ package text;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.regex.PatternSyntaxException;
 
 public class Texter {
@@ -57,6 +58,22 @@ public class Texter {
         reader.close();
         stream.close();
         return dict;
+    }
+
+    public Optional<String> getTitle() {
+        String titleText;
+        try {
+            StringBuilder builder = new StringBuilder();
+            HashMap<String, String> text = texter.getText("title");
+            for(String line : text.values()) {
+                builder.insert(0, (line+"\n"));
+            }
+            titleText = builder.toString();
+        } catch (Exception e) {
+            System.out.println("Exception caught in while getting title text: " + e);
+            return Optional.empty();
+        }
+        return Optional.of(titleText);
     }
 }
 

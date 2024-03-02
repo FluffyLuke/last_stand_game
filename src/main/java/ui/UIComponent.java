@@ -10,4 +10,6 @@ public interface UIComponent {
     public void prepare(MultiWindowTextGUI textGUI);
     public void render();
     public void close();
+
+    public void refresh();
 }

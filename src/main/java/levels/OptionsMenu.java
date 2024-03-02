@@ -172,6 +172,11 @@ public class OptionsMenu extends Level{
         this.window.close();
     }
 
+    @Override
+    public void refresh() {
+        // TODO
+    }
+
     public void changeDifficulty() {
         this.difficulty = switch (this.difficulty) {
             case Easy -> Medium;

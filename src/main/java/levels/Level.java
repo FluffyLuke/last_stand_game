@@ -12,4 +12,8 @@ public abstract class Level implements UIComponent {
     public Level(String lvlName) {
         this.lvlName = lvlName;
     }
+
+    public String getLvlName() {
+        return lvlName;
+    }
 }

@@ -1,5 +1,6 @@
 package game.units.humans;
 
+import game.Side;
 import game.units.Unit;
 
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class RifleMan extends Unit {
+
     private Optional<RifleManAbility> nextAbility;
 
     public RifleMan(
@@ -16,8 +18,10 @@ public class RifleMan extends Unit {
             String unitName,
             int threatLevel,
             int damage,
-            int initiative) {
-        super(health, maxHealth, armor, unitName, threatLevel, damage, initiative);
+            int initiative,
+            char unitSymbol,
+            Side side) {
+        super(health, maxHealth, armor, unitName, threatLevel, damage, initiative, unitSymbol, side);
         this.nextAbility = Optional.empty();
     }
 

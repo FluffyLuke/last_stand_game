@@ -30,7 +30,7 @@ public class Texter {
     public HashMap<String, String> getText(String fileName) throws IOException {
         String path;
         switch (langChosen) {
-            case Language.English -> path = "text/english/" + fileName + ".txt";
+            case English -> path = "text/english/" + fileName + ".txt";
             default -> path = "text/english/" + fileName + ".txt";
         }
 
@@ -74,6 +74,36 @@ public class Texter {
             return Optional.empty();
         }
         return Optional.of(titleText);
+    }
+
+    public char[][] getMap() throws IOException {
+        var path = "map/level1.txt";
+        var stream = loader.getResourceAsStream(path);
+        if(stream == null) {
+            System.out.println("Cannot fine a map file!!!");
+            throw new FileNotFoundException();
+        }
+        char[][] map = new char[25][25];
+        int index = 0;
+        var reader = new BufferedReader(new InputStreamReader(stream));
+        for(String line : reader.lines().toList()) {
+            try {
+                map[index] = line.toCharArray();
+                index++;
+            } catch (PatternSyntaxException e) {
+                System.out.println("Error in text file pattern detected : " + line);
+                map = null;
+                break;
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("Error while indexing map : " + line);
+                map = null;
+                break;
+            }
+        }
+        System.out.println("Map successfully retrieved");
+        reader.close();
+        stream.close();
+        return map;
     }
 }
 

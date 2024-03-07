@@ -1,9 +1,15 @@
 package game.units;
 
+import game.Side;
+import game.map.MapItem;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-public abstract class Unit {
+public abstract class Unit implements MapItem {
+    protected int xCoordinates;
+    protected int yCoordinates;
+    protected char unitSymbol;
     protected int armor;
     protected int maxHealth;
     protected int health;
@@ -11,8 +17,17 @@ public abstract class Unit {
     protected int threatLevel;
     protected int damage;
     protected int initiative;
+    protected Side side;
 
-    public Unit(int health, int maxHealth, int armor, String unitName, int threatLevel, int damage, int iniciative) {
+    public Unit(
+            int health,
+            int maxHealth,
+            int armor, String unitName,
+            int threatLevel,
+            int damage,
+            int iniciative,
+            char unitSymbol,
+            Side side) {
         this.health = health;
         this.maxHealth = maxHealth;
         this.armor = armor;
@@ -20,6 +35,8 @@ public abstract class Unit {
         this.threatLevel = threatLevel;
         this.damage = damage;
         this.initiative = iniciative;
+        this.unitSymbol = unitSymbol;
+        this.side = side;
     }
 
     public void getHit(Attack attack) {
@@ -119,5 +136,24 @@ public abstract class Unit {
 
     public void setInitiative(int initiative) {
         this.initiative = initiative;
+    }
+    @Override
+    public int getX() {
+        return this.xCoordinates;
+    }
+    public int getY() {
+        return this.yCoordinates;
+    }
+    public void setCoordinates(int x, int y) {
+        this.xCoordinates = x;
+        this.yCoordinates = y;
+    }
+
+    public Side getSide() {
+        return side;
+    }
+
+    public char getUnitSymbol() {
+        return unitSymbol;
     }
 }

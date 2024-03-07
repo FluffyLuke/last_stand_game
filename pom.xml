@@ -36,6 +36,7 @@
                     <include>text/english/main_menu.txt</include>
                     <include>text/english/test_text.txt</include>
                     <include>text/english/title.txt</include>
+                    <include>map/level1.txt</include>
                 </includes>
             </resource>
         </resources>

@@ -40,24 +40,39 @@ public class Mapper {
             for(char c2 : c1) {
                 System.out.print(c2);
             }
-            System.out.println('\n');
+            System.out.println();
         }
 
         placeSpawners();
     }
 
-    // TODO end this function
-    public Optional<CannotMove> moveAUnit(Unit unit) {
+    // Reasons why unit cannot move
+    public enum CannotMove {
+        CannotFindPath;
+    }
+    public Optional<CannotMove> moveAUnit(Unit unit, Point destination) {
+        // Check if it can even go there
+        Pathfinder pf = new Pathfinder(map_terrain.clone());
+        var path = pf.findAPath(unit.getPoint(), destination);
+        if(path.isEmpty()) {
+            return Optional.of(CannotMove.CannotFindPath);
+        }
+        Point pointAfterTravel = path.get().follow(unit.getPoint(), unit.getSpeed());
+        this.map_terrain[unit.getX()][unit.getY()] = '.';
+        this.map_terrain[pointAfterTravel.x][pointAfterTravel.y] = unit.getUnitSymbol();
+
+        unit.setPoint(pointAfterTravel);
+
         return Optional.empty();
     }
-    // TODO end this function
-//    public Optional<CannotMove> canMoveAUnit(Unit unit) {
-//
-//    }
 
-    // Reasons why cannot move
-    public enum CannotMove {
-
+    public Optional<CannotMove> canMoveAUnit(Unit unit, Point destination) {
+        Pathfinder pf = new Pathfinder(map_terrain.clone());
+        var path = pf.findAPath(unit.getPoint(), destination);
+        if(path.isEmpty()) {
+            return Optional.of(CannotMove.CannotFindPath);
+        }
+        return Optional.empty();
     }
 
     public static Mapper getMapper() {
@@ -81,23 +96,23 @@ public class Mapper {
                 }
                 y_index++;
             }
+            y_index = 0;
             x_index++;
         }
     }
 
-    public boolean add_unit(Unit unit) {
+    public boolean addUnit(Unit unit) {
         Random rand = new Random();
         List<Spawner> spawners = this.spawners
                 .stream()
                 .filter(spawner -> spawner.getSide() == unit.getSide())
                 .toList();
         Spawner spawner = spawners.get(rand.nextInt(spawners.size()));
-
+        //System.out.println(spawner.getPoint().x + " " + spawner.getPoint().y);
         // Find next close space near the spawner
-        int x_spawner = spawner.getX();
-        int y_spawner = spawner.getY();
+        int x_spawner = spawner.getPoint().x;
+        int y_spawner = spawner.getPoint().y;
 
-        // we
         for(int x = 0; x < 3; x++) {
             for(int y = 0; y < 3; y++) {
                 try {
@@ -106,43 +121,50 @@ public class Mapper {
                         continue;
                     }
                     this.map_terrain[x_spawner-1+x][y_spawner-1+y] = unit.getUnitSymbol();
-                    unit.setCoordinates(x_spawner-1+x, y_spawner-1+y);
+                    unit.setPoint(new Point(x_spawner-1+x, y_spawner-1+y));
                     this.units.add(unit);
                     return true;
                 } catch (IndexOutOfBoundsException e) {
+                    //System.out.println("index out of bounds!!!");
                     continue;
                 }
             }
         }
         return false;
     }
-
+    public void printMap() {
+        for(char[] x : this.map_terrain) {
+            for(char y : x) {
+                System.out.print(y);
+            }
+            System.out.println(" ");
+        }
+    }
+    public char[][] getMap() {
+        return this.map_terrain.clone();
+    }
 }
 
 class Spawner implements MapItem {
     public Spawner(int x, int y, Side side) {
         this.side = side;
-        this.x = x;
-        this.y = y;
+        this.point = new Point(x,y);
     }
-    private int x;
-    private int y;
+    public Spawner(Point point, Side side) {
+        this.side = side;
+        this.point = point;
+    }
+    private Point point;
     private final Side side;
 
     @Override
-    public int getX() {
-        return x;
+    public void setPoint(Point point) {
+        this.point = point;
     }
 
     @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setCoordinates(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public Point getPoint() {
+        return this.point;
     }
 
     public Side getSide() {

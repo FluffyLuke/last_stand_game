@@ -2,13 +2,13 @@ package game.units;
 
 import game.Side;
 import game.map.MapItem;
+import game.map.Point;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public abstract class Unit implements MapItem {
-    protected int xCoordinates;
-    protected int yCoordinates;
+    protected Point point;
     protected char unitSymbol;
     protected int armor;
     protected int maxHealth;
@@ -17,6 +17,7 @@ public abstract class Unit implements MapItem {
     protected int threatLevel;
     protected int damage;
     protected int initiative;
+    protected int speed;
     protected Side side;
 
     public Unit(
@@ -27,6 +28,7 @@ public abstract class Unit implements MapItem {
             int damage,
             int iniciative,
             char unitSymbol,
+            int speed,
             Side side) {
         this.health = health;
         this.maxHealth = maxHealth;
@@ -35,6 +37,7 @@ public abstract class Unit implements MapItem {
         this.threatLevel = threatLevel;
         this.damage = damage;
         this.initiative = iniciative;
+        this.speed = speed;
         this.unitSymbol = unitSymbol;
         this.side = side;
     }
@@ -137,16 +140,17 @@ public abstract class Unit implements MapItem {
     public void setInitiative(int initiative) {
         this.initiative = initiative;
     }
-    @Override
     public int getX() {
-        return this.xCoordinates;
+        return this.point.x;
     }
     public int getY() {
-        return this.yCoordinates;
+        return this.point.y;
     }
-    public void setCoordinates(int x, int y) {
-        this.xCoordinates = x;
-        this.yCoordinates = y;
+    public void setPoint(Point point) {
+        this.point = point;
+    }
+    public Point getPoint() {
+        return this.point;
     }
 
     public Side getSide() {
@@ -155,5 +159,15 @@ public abstract class Unit implements MapItem {
 
     public char getUnitSymbol() {
         return unitSymbol;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+    public void setSpeed(int newSpeed) {
+        if(newSpeed <= 0) {
+            this.speed = 1;
+        }
+        this.speed = newSpeed;
     }
 }

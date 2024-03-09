@@ -20,8 +20,9 @@ public class RifleMan extends Unit {
             int damage,
             int initiative,
             char unitSymbol,
+            int speed,
             Side side) {
-        super(health, maxHealth, armor, unitName, threatLevel, damage, initiative, unitSymbol, side);
+        super(health, maxHealth, armor, unitName, threatLevel, damage, initiative, unitSymbol, speed, side);
         this.nextAbility = Optional.empty();
     }
 

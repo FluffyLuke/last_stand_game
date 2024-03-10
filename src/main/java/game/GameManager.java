@@ -3,6 +3,7 @@ package game;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import levels.Level;
+import levels.MainLevel;
 import levels.MainMenu;
 import levels.OptionsMenu;
 import ui.UIManager;
@@ -53,6 +54,7 @@ public class GameManager {
 
         levels.add(new MainMenu("Main menu"));
         levels.add(new OptionsMenu("Options"));
+        levels.add(new MainLevel("Main"));
 
         return levels;
     }

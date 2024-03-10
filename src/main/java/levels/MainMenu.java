@@ -85,7 +85,7 @@ public class MainMenu extends Level {
 
         var buttonLayout = LinearLayout.createLayoutData(LinearLayout.Alignment.Center);
 
-        Button button1 = new Button(mainMenuText.get("play_button"));
+        Button button1 = new Button(mainMenuText.get("play_button"), new PlayGame());
         Button button2 = new Button(mainMenuText.get("options_button"), new ChangeToOptions());
         Button button3 = new Button(mainMenuText.get("quit_button"), new Exit());
 
@@ -122,6 +122,13 @@ class Exit implements Runnable {
     @Override
     public void run() {
         System.exit(0);
+    }
+}
+
+class PlayGame implements Runnable {
+    @Override
+    public void run() {
+        GameManager.playLevel("main");
     }
 }
 

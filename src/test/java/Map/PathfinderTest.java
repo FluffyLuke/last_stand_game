@@ -1,11 +1,14 @@
 package Map;
 
+import game.map.Mapper;
 import game.map.Pathfinder;
 import game.map.Path;
 import game.map.Point;
 import org.junit.Assert;
 import org.junit.Test;
+import text.Texter;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public class PathfinderTest {
@@ -34,24 +37,19 @@ public class PathfinderTest {
         expectedPath.steps.add(Path.Step.Left);
         Assert.assertEquals(expectedPath.steps, path.get().steps);
     }
-//    @Test
-//    public void gettingDirectionsTest() {
-//        Point a = new Point(2, 2);
-//        Point b1 = new Point(2, 4);
-//        Point b2 = new Point(3, 4);
-//        Point b3 = new Point(3, 2);
-//        Point b4 = new Point(4, -1);
-//        Point b5 = new Point(2, -2);
-//        Point b6 = new Point(0, -1);
-//        Point b7 = new Point(0, 2);
-//        Point b8 = new Point(0, 5);
-//        Assert.assertEquals(Path.Step.Up, a.getDirection(b1));
-//        Assert.assertEquals(Path.Step.UpRight, a.getDirection(b2));
-//        Assert.assertEquals(Path.Step.Right, a.getDirection(b3));
-//        Assert.assertEquals(Path.Step.DownRight, a.getDirection(b4));
-//        Assert.assertEquals(Path.Step.Down,a.getDirection(b5));
-//        Assert.assertEquals(Path.Step.DownLeft,a.getDirection(b6));
-//        Assert.assertEquals(Path.Step.Left, a.getDirection(b7));
-//        Assert.assertEquals(Path.Step.UpLeft, a.getDirection(b8));
-//    }
+    @Test
+    public void pathTest2() throws IOException {
+        char[][] map = Texter.getTexter().getMap();
+
+        Point startingPoint = new Point(22,20);
+        Point destination = new Point(1, 1);
+
+        Pathfinder pf = new Pathfinder(map);
+
+        Optional<Path> path = pf.findAPath(startingPoint, destination);
+        Point exitPoint = path.get().follow(startingPoint);
+        System.out.println("Destination: " + destination.y + ", " + destination.x);
+        System.out.println("Returned point: " + exitPoint.y + ", " + exitPoint.x);
+        Assert.assertEquals(destination, exitPoint);
+    }
 }

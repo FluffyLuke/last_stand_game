@@ -1,6 +1,7 @@
 package game.units.humans;
 
 import game.Side;
+import game.map.Mapper;
 import game.units.Unit;
 
 import java.util.ArrayList;
@@ -33,15 +34,26 @@ public class RifleMan extends Unit {
 
     @Override
     public void move() {
-        // TODO create this function
-        // Map is needed to do so
+        if(destination.isEmpty()) {
+            return;
+        }
+        if(!canMove()) {
+            return;
+        }
+        Mapper.getMapper().moveAUnit(this, this.destination.get());
     }
 
     @Override
     public boolean canMove() {
-        // TODO create this function
-        // Map is needed to do so
-        return true;
+        if(destination.isEmpty()) {
+            return false;
+        }
+        Optional<Mapper.CannotMove> ifCanMove = Mapper.getMapper().canMoveAUnit(this, destination.get());
+        if(ifCanMove.isEmpty()){
+            return true;
+        }
+        // TODO add radio texts depending on what is in "ifCanMove"
+        return false;
     }
 
     @Override

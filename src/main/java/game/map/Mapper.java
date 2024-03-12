@@ -132,6 +132,13 @@ public class Mapper {
         }
         return false;
     }
+    public void removeUnit(Unit unit) {
+        if(!this.units.contains(unit)) {
+            return;
+        }
+        this.map_terrain[unit.getX()][unit.getY()] = '.';
+        this.units.remove(unit);
+    }
     public void printMap() {
         for(char[] x : this.map_terrain) {
             for(char y : x) {

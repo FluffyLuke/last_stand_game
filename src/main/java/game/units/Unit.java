@@ -5,6 +5,7 @@ import game.map.MapItem;
 import game.map.Point;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Random;
 
 public abstract class Unit implements MapItem {
@@ -19,6 +20,7 @@ public abstract class Unit implements MapItem {
     protected int initiative;
     protected int speed;
     protected Side side;
+    protected Optional<Point> destination;
 
     public Unit(
             int health,
@@ -40,6 +42,7 @@ public abstract class Unit implements MapItem {
         this.speed = speed;
         this.unitSymbol = unitSymbol;
         this.side = side;
+        this.destination = Optional.empty();
     }
 
     public void getHit(Attack attack) {
@@ -169,5 +172,12 @@ public abstract class Unit implements MapItem {
             this.speed = 1;
         }
         this.speed = newSpeed;
+    }
+    public boolean isAlive() {
+        return this.health > 0;
+    }
+
+    public void setDestination(Point destination) {
+        this.destination = Optional.of(destination);
     }
 }

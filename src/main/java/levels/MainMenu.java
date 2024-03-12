@@ -128,13 +128,13 @@ class Exit implements Runnable {
 class PlayGame implements Runnable {
     @Override
     public void run() {
-        GameManager.playLevel("main");
+        GameManager.getGameManager().playLevel("main");
     }
 }
 
 class ChangeToOptions implements Runnable {
     @Override
     public void run() {
-        GameManager.playLevel("Options");
+        GameManager.getGameManager().playLevel("Options");
     }
 }

@@ -4,18 +4,29 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.SimpleTheme;
 import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.gui2.dialogs.MessageDialog;
+import com.googlecode.lanterna.gui2.dialogs.TextInputDialog;
+import com.googlecode.lanterna.gui2.dialogs.TextInputDialogBuilder;
 import com.googlecode.lanterna.gui2.menu.Menu;
 import com.googlecode.lanterna.gui2.menu.MenuBar;
 import com.googlecode.lanterna.gui2.menu.MenuItem;
 import com.googlecode.lanterna.gui2.table.Table;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalResizeListener;
+import com.sun.tools.javac.Main;
+import game.GameManager;
 import game.GameOptions;
+import game.GameStateWatcher;
 import game.map.Mapper;
+import game.map.Point;
+import game.units.Unit;
 
+import java.text.ParseException;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
-public class MainLevel extends Level {
+public class MainLevel extends Level implements GameStateWatcher {
     private Window window;
     private TerminalSize screenSize;
     private Panel topPanel;
@@ -31,8 +42,11 @@ public class MainLevel extends Level {
     private final int topPanelHeight = 1;
     private final int levelHeight =35;
     private final int levelWidth = 120;
+    //private final GameManager gameManager;
+    private Mapper mapper;
     public MainLevel(String lvlName) {
         super(lvlName);
+        this.mapper = Mapper.getMapper();
     }
 
     // TODO Take text from outside file instead of hard coding it
@@ -84,11 +98,73 @@ public class MainLevel extends Level {
         menuBar = new MenuBar();
         Menu optionsMenu = new Menu("Options");
         optionsMenu.add(new MenuItem("Exit", new ExitMenuItem()));
+        Menu speedOptions = new Menu("Game Speed");
+        speedOptions.add(new MenuItem("Change game speed", new Runnable() {
+            @Override
+            public void run() {
+                String result = new TextInputDialogBuilder()
+                        .setTitle("Get game speed")
+                        .setDescription("Enter speed of the game (0-3)")
+                        .setValidationPattern(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE), "Not a game speed!")
+                        .build()
+                        .showDialog(textGUI);
+                int parsedResult = Integer.parseInt(result);
+                GameManager.getGameManager().setGameSpeed(parsedResult);
+            }
+        }));
         Menu actionsMenu = new Menu("Actions");
-        actionsMenu.add(new MenuItem("Move Soldiers", new MoveSoldiersMenuItem()));
+
+        // -- MENU ACTIONS ---
+        actionsMenu.add(new MenuItem("Move Soldiers", new Runnable() {
+            @Override
+            public void run() {
+                int lastSpeed = GameManager.getGameManager().getGameSpeed();
+                GameManager.getGameManager().units.forEach(x -> System.out.println("Unit[ column: " + x.getY() + ", row: "+x.getX()+" ]"));
+                String column = new TextInputDialogBuilder()
+                        .setTitle("Get column")
+                        .setDescription("Enter a column number of a unit")
+                        .setValidationPattern(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE), "Not a column!")
+                        .build()
+                        .showDialog(textGUI);
+                String row = new TextInputDialogBuilder()
+                        .setTitle("Get row")
+                        .setDescription("Enter a row number of a unit")
+                        .setValidationPattern(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE), "Not a row!")
+                        .build()
+                        .showDialog(textGUI);
+                int parsedCol;
+                int parsedRow;
+                parsedCol = Integer.parseInt(column)-1;
+                parsedRow = Integer.parseInt(row)-1;
+                Optional<Unit> unit = GameManager.getGameManager().getUnit(parsedRow, parsedCol);
+
+                if(unit.isEmpty()) {
+                    MessageDialog.showMessageDialog(textGUI, "No unit found", "Did not found specified unit!");
+                    return;
+                }
+                column = new TextInputDialogBuilder()
+                        .setTitle("Get column")
+                        .setDescription("Enter a column number where unit should go")
+                        .setValidationPattern(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE), "Not a column!")
+                        .build()
+                        .showDialog(textGUI);
+                row = new TextInputDialogBuilder()
+                        .setTitle("Get row")
+                        .setDescription("Enter a row number where unit should go")
+                        .setValidationPattern(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE), "Not a row!")
+                        .build()
+                        .showDialog(textGUI);
+                parsedCol = Integer.parseInt(column) - 1;
+                parsedRow = Integer.parseInt(row) - 1;
+                unit.get().setDestination(new Point(parsedRow, parsedCol));
+            }
+        }));
         actionsMenu.add(new MenuItem("Move MG", new MoveMGsMenuItem()));
         actionsMenu.add(new MenuItem("Defend point", new DefendSoldiersMenuItem()));
+        // -------------------
+
         menuBar.add(optionsMenu);
+        menuBar.add(speedOptions);
         menuBar.add(actionsMenu);
         menuBar.setTheme(GameOptions.getTheme());
 
@@ -146,8 +222,9 @@ public class MainLevel extends Level {
                 1,1
         ));
         this.mapTable.setPreferredSize(new TerminalSize(70,70));
-
-        renderMap();
+        for(char[] line : mapper.getMap()) {
+            this.mapTable.getTableModel().addRow(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21],line[22],line[23],line[24]);
+        }
         bottomPanel.addComponent(mapTable);
 
         this.radioLabel = new Label("Test text");
@@ -184,17 +261,18 @@ public class MainLevel extends Level {
     public void refresh() {
         // TODO
         setProperSpeedLabel();
-        renderTopPanel(screenSize);
         renderMap();
         renderRadio();
     }
-    public void renderTopPanel(TerminalSize screenSize) {
-        topPanel.setPreferredSize(new TerminalSize(screenSize.getColumns(), topPanelHeight));
-        optionsPanel.setPreferredSize(new TerminalSize(
-                topPanel.getSize().getColumns()/3*2,
-                topPanel.getSize().getRows()
-        ));
-        optionsPanel.addComponent(menuBar);
+    public void setProperSpeedLabel() {
+        this.speed = GameManager.getGameManager().getGameSpeed();
+        switch (speed) {
+            case 0 -> {this.speedLabel.setText("||");}
+            case 1 -> {this.speedLabel.setText(">");}
+            case 2 -> {this.speedLabel.setText(">>");}
+            case 3 -> {this.speedLabel.setText(">>>");}
+            default -> {this.speedLabel.setText("ERR WRONG SPEED!!!");}
+        }
     }
 
     public void setSpeed(int speed) {
@@ -212,38 +290,29 @@ public class MainLevel extends Level {
     public int getSpeed() {
         return speed;
     }
-    public void setProperSpeedLabel() {
-        switch (speed) {
-            case 0 -> {this.speedLabel.setText("||");}
-            case 1 -> {this.speedLabel.setText(">");}
-            case 2 -> {this.speedLabel.setText(">>");}
-            case 3 -> {this.speedLabel.setText(">>>");}
-            default -> {this.speedLabel.setText("ERR WRONG SPEED!!!");}
-        }
-    }
     public void renderMap() {
-        char[][] map = Mapper.getMapper().getMap();
-        for(char[] line : map) {
-            this.mapTable.getTableModel().addRow(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21],line[22],line[23],line[24]);
+        char[][] newMap = Mapper.getMapper().getMap();
+        for(int x = 0; x < 25; x++) {
+            for(int y = 0; y < 25; y++) {
+                this.mapTable.getTableModel().setCell(y, x, newMap[x][y]);
+            }
         }
     }
     public void renderRadio() {
         // TODO
     }
+
+    @Override
+    public void gameStateChange() {
+        this.refresh();
+    }
 }
+
 
 class ExitMenuItem implements Runnable {
     @Override
     public void run() {
         System.exit(0);
-    }
-}
-
-class MoveSoldiersMenuItem implements Runnable {
-    @Override
-    public void run() {
-        System.out.println("Moving soldiers...");
-        // TODO
     }
 }
 class DefendSoldiersMenuItem implements Runnable {

@@ -238,7 +238,7 @@ class SaveAndQuit implements Runnable {
                 menu.getDifficulty(),
                 menu.getTheme()
         );
-        GameManager.playLevel("Main menu");
+        GameManager.getGameManager().playLevel("Main menu");
     }
 }
 

@@ -7,7 +7,9 @@ import com.googlecode.lanterna.gui2.AsynchronousTextGUIThread;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.SeparateTextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
+import com.googlecode.lanterna.gui2.dialogs.MessageDialog;
 import com.googlecode.lanterna.screen.Screen;
+import game.GameManager;
 
 import java.io.IOException;
 
@@ -15,7 +17,6 @@ public class UIManager {
     private UIComponent uiComponent;
     private final Screen screen;
     private final MultiWindowTextGUI textGUI;
-    private Thread uiThread;
     public UIManager(Screen screen) {
         this.screen = screen;
         this.textGUI = new MultiWindowTextGUI(new SeparateTextGUIThread.Factory(), screen);
@@ -38,5 +39,11 @@ public class UIManager {
 
         this.uiComponent.prepare(this.textGUI);
         this.uiComponent.render();
+    }
+    public void diplayMessage(String title, String description) {
+        int speedBefore = GameManager.getGameManager().getGameSpeed();
+        GameManager.getGameManager().setGameSpeed(0);
+        MessageDialog.showMessageDialog(this.textGUI, title, description);
+        GameManager.getGameManager().setGameSpeed(speedBefore);
     }
 }

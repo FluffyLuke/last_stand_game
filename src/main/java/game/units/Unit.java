@@ -2,6 +2,7 @@ package game.units;
 
 import game.Side;
 import game.map.MapItem;
+import game.map.Path;
 import game.map.Point;
 
 import java.util.ArrayList;
@@ -20,7 +21,9 @@ public abstract class Unit implements MapItem {
     protected int initiative;
     protected int speed;
     protected Side side;
+    public int sight;
     protected Optional<Point> destination;
+    protected Optional<Path> pathToDestination;
 
     public Unit(
             int health,
@@ -31,6 +34,7 @@ public abstract class Unit implements MapItem {
             int iniciative,
             char unitSymbol,
             int speed,
+            int sight,
             Side side) {
         this.health = health;
         this.maxHealth = maxHealth;
@@ -43,6 +47,7 @@ public abstract class Unit implements MapItem {
         this.unitSymbol = unitSymbol;
         this.side = side;
         this.destination = Optional.empty();
+        this.sight = sight;
     }
 
     public void getHit(Attack attack) {
@@ -52,6 +57,7 @@ public abstract class Unit implements MapItem {
         float nonPenChance = r.nextFloat(97) + 3;
 
         if(nonPenChance > armorCalculated) {
+            System.out.println("Unit got hit, attack did not penetrate");
             return;
         }
 
@@ -60,9 +66,11 @@ public abstract class Unit implements MapItem {
         // Crit attack
         if(critChance < attack.critChance) {
             this.alterHealthFor(-(attack.damage*2));
+            System.out.println("Unit got hit, " + this.health + " hp remains");
             return;
         }
         this.alterHealthFor(-attack.damage);
+        System.out.println("Unit got hit, " + this.health + " hp remains");
     }
     public abstract void move();
     public abstract boolean canMove();
@@ -83,14 +91,13 @@ public abstract class Unit implements MapItem {
             return;
         }
         if(health <= 0) {
-            this.die();
+            this.health = 0;
             return;
         }
         this.health = health;
     }
     public void alterHealthFor(int health) {
         if((this.health - health) < 0) {
-            die();
             return;
         }
         this.health += health;
@@ -109,8 +116,6 @@ public abstract class Unit implements MapItem {
         }
         this.armor += armorLevel;
     }
-
-    public abstract void die();
 
     public String getUnitName() {
         return unitName;
@@ -179,5 +184,6 @@ public abstract class Unit implements MapItem {
 
     public void setDestination(Point destination) {
         this.destination = Optional.of(destination);
+        this.pathToDestination = Optional.empty();
     }
 }

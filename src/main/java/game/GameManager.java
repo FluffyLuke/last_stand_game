@@ -5,6 +5,8 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import game.map.Mapper;
 import game.units.Unit;
 import game.units.humans.RifleMan;
+import game.units.humans.RiflemanFactory;
+import game.units.monsters.MonstersFactory;
 import levels.Level;
 import levels.MainLevel;
 import levels.MainMenu;
@@ -13,8 +15,7 @@ import ui.UIManager;
 
 import javax.swing.event.ChangeEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,17 @@ public class GameManager {
     private  ArrayList<Level> levels;
     public ArrayList<Unit> units;
     private volatile Mapper mapper;
+    private final int eventInterval;
+    private int currentTick = 0;
+    private List<String> radioMessages;
 
+    private enum Event {
+        MonstersSpawned,
+        UnitsSpawned,
+        Wipe,
+        Win
+    }
+    private Iterator<Event> events;
     private  int gameSpeed = 0;
 
     private GameManager() {
@@ -38,6 +49,9 @@ public class GameManager {
         this.gameSpeed = 0;
         this.units = new ArrayList<>();
         this.mapper = Mapper.getMapper();
+        this.events = createEvents().iterator();
+        this.eventInterval = 10;
+        this.radioMessages = new ArrayList<>();
     }
     public static GameManager getGameManager() {
         if(gMInstance == null) {
@@ -80,26 +94,66 @@ public class GameManager {
 
         return levels;
     }
+    private List<Event> createEvents() {
+        ArrayList<Event> events = new ArrayList<>();
+        switch (GameOptions.getDifficulty()) {
+            case Easy -> {
+                events.add(Event.UnitsSpawned);
+                events.add(Event.UnitsSpawned);
+                events.add(Event.UnitsSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+            }
+            case Medium -> {
+                events.add(Event.UnitsSpawned);
+                events.add(Event.UnitsSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+            }
+            case Hard -> {
+                events.add(Event.UnitsSpawned);
+                events.add(Event.UnitsSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.MonstersSpawned);
+                events.add(Event.Wipe);
+            }
+        }
+        Collections.shuffle(events);
+        events.add(Event.Win);
+        return events;
+    }
 
     public void startGame() {
         playLevel("Main menu");
-        var unit = new RifleMan(10, 10 ,10, "d", 3, 13,1,'c',5,Side.Humans);
-        this.units.add(unit);
-        mapper.addUnit(unit);
+        var startUnit1 = RiflemanFactory.getRifleMan();
+        var startUnit2 = RiflemanFactory.getRifleMan();
+        this.units.add(startUnit1);
+        mapper.addUnit(startUnit1);
+        this.units.add(startUnit2);
+        mapper.addUnit(startUnit2);
         while(true) {
             // For some reason code does not work without a print here??
             System.out.print("");
             if(this.gameSpeed == 0) {
                 continue;
             }
+            if(!mapper.isBaseAlive()) {
+                this.endGame(false);
+            }
             System.out.println("Running next tick!");
+            currentTick++;
             try {
                 TimeUnit.MILLISECONDS.sleep(1000L / this.gameSpeed);
             } catch (InterruptedException e) {
                 System.out.println("Tick was interrupted!!!");
                 return;
             }
-            mapper.printMap();
+            //mapper.printMap();
             nextTick();
         }
     }
@@ -115,7 +169,39 @@ public class GameManager {
     }
 
     private void event() {
-        // TODO
+        if(this.currentTick % 10 != 0) {
+            return;
+        }
+        Event e = events.next();
+            switch (e) {
+                case UnitsSpawned -> {
+                    Unit unit1 = RiflemanFactory.getRifleMan();
+                    Unit unit2 = RiflemanFactory.getRifleMan();
+                    this.units.add(unit1); this.units.add(unit2);
+                    mapper.addUnit(unit1); mapper.addUnit(unit2);
+                    this.uiManager.diplayMessage("New units have spawned", "2 additional units have been spawned");
+                }
+                case MonstersSpawned -> {
+                    Unit unit1 = MonstersFactory.getMonster();
+                    Unit unit2 = MonstersFactory.getMonster();
+                    Unit unit3 = MonstersFactory.getMonster();
+                    this.units.add(unit1); this.units.add(unit2); this.units.add(unit3);
+                    mapper.addUnit(unit1); mapper.addUnit(unit2); mapper.addUnit(unit3);
+                    this.uiManager.diplayMessage("New monsters have spawned", "3 additional monsters have been spawned");
+                }
+                case Wipe -> {
+                    this.units.forEach(u -> mapper.removeUnit(u));
+                    this.units.clear();
+                    Unit unit1 = RiflemanFactory.getRifleMan();
+                    Unit unit2 = RiflemanFactory.getRifleMan();
+                    this.units.add(unit1); this.units.add(unit2);
+                    mapper.addUnit(unit1); mapper.addUnit(unit2);
+                    this.uiManager.diplayMessage("Massive wipe", "Massive explosion have wiped the map clean. New reinforcements have been sent");
+                }
+                case Win -> {
+                    endGame(true);
+                }
+            }
     }
 
     private void moveUnits() {
@@ -131,14 +217,43 @@ public class GameManager {
     }
     private void checkForDeadUnits() {
         ArrayList<Unit> deadUnits = new ArrayList<>();
+        int numOfUnitsBefore = this.units.size();
         this.units.forEach(x -> {
             if(!x.isAlive()) {
+                System.out.println("Found dead unit: " + x.getUnitName() + " " + x.getX() + " " + x.getY());
                 deadUnits.add(x);
             }
         });
+
+        // No dead units found
+        if (deadUnits.isEmpty()) {
+            return;
+        }
+
         deadUnits.forEach(x -> this.mapper.removeUnit(x));
         this.units.removeAll(deadUnits);
+        System.out.println("Number of units went from "+numOfUnitsBefore+" to "+this.units.size());
     }
+    public String getRadioMessages() {
+        String messages = "";
+        int index = 0;
+        for(String m : radioMessages.reversed()) {
+            if(index > 20) {
+                continue;
+            }
+            messages += m;
+            messages += "\n";
+            index++;
+        }
+        return messages;
+    }
+    public void addRadioMessage(Unit unit, String message) {
+        this.radioMessages.add(unit.getUnitName() + ": " +message);
+    }
+    public void addRadioMessage(String message) {
+        this.radioMessages.add(message);
+    }
+
 
     public void setGameSpeed(int speed) {
         if(speed > 3) {
@@ -177,5 +292,17 @@ public class GameManager {
 
     private void optionsChange() {
         optionWatchers.forEach((OptionWatcher::optionChange));
+    }
+    public void endGame(boolean ifWin) {
+        if(ifWin) {
+            System.out.println("You defeated the monsters!");
+        } else {
+            System.out.println("Monsters have destroyed your base!");
+        }
+        System.exit(0);
+    }
+
+    public UIManager getUiManager() {
+        return uiManager;
     }
 }

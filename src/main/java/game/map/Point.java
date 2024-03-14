@@ -1,6 +1,7 @@
 package game.map;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
@@ -31,40 +32,43 @@ public class Point {
         return new Point(this.x, this.y);
     }
 
-    public Path.Step getDirection(Point point) {
+    public Optional<Path.Step> getDirection(Point point) {
         //if(this.getDistance(point) != 1.0d && this.getDistance(point) != )
 
         // UP
         if(this.y == point.y && this.x > point.x) {
-            return Path.Step.Up;
+            return Optional.of(Path.Step.Up);
         }
         // UP-RIGHT
         if(this.y < point.y && this.x > point.x) {
-            return Path.Step.UpRight;
+            return Optional.of(Path.Step.UpRight);
         }
         // RIGHT
         if(this.y < point.y && this.x == point.x) {
-            return Path.Step.Right;
+            return Optional.of(Path.Step.Right);
         }
         // DOWN-RIGHT
         if(this.y < point.y && this.x < point.x) {
-            return Path.Step.DownRight;
+            return Optional.of(Path.Step.DownRight);
         }
         // DOWN
         if(this.y == point.y && this.x < point.x) {
-            return Path.Step.Down;
+            return Optional.of(Path.Step.Down);
         }
         // DOWN-LEFT
         if(this.y > point.y && this.x < point.x) {
-            return Path.Step.DownLeft;
+            return Optional.of(Path.Step.DownLeft);
         }
         // LEFT
         if(this.y > point.y && this.x == point.x) {
-            return Path.Step.Left;
+            return Optional.of(Path.Step.Left);
         }
         // UP-LEFT
         if(this.y > point.y && this.x > point.x) {
-            return Path.Step.UpLeft;
+            return Optional.of(Path.Step.UpLeft);
+        }
+        if(this.y == point.y && this.x == point.x) {
+            return Optional.empty();
         }
         throw new NoSuchElementException();
     }

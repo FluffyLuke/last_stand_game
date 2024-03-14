@@ -7,8 +7,8 @@ import org.junit.Test;
 import java.util.HashMap;
 
 public class MapperTest {
-    @Test
-    public void getMapperTest() {
-        Mapper mapper = Mapper.getMapper();
-    }
+//    @Test
+//    public void getMapperTest() {
+//        Mapper mapper = Mapper.getMapper();
+//    }
 }

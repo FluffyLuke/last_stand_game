@@ -17,9 +17,9 @@ w.......................w
 w..w##w...........w##w..w
 w..w..w..ww..www..w..w..w
 wwww......ww.w.......wwww
-w..wwww...........wwww..w
+wwwwwww...........wwwwwww
+www..................wwww
 w.......................w
-w..........bbb..........w
-w..........bbb..........w
-w..h.......bbb.......h..w
+w.......................w
+w..h........b........h..w
 wwwwwwwwwwwwwwwwwwwwwwwww

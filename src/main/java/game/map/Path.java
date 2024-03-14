@@ -1,10 +1,24 @@
 package game.map;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-public class Path {
+public class Path implements Iterator<Path.Step> {
+    private int currentIndex = 0;
+    @Override
+    public boolean hasNext() {
+        return currentIndex < steps.size();
+    }
+
+    @Override
+    public Step next() {
+        if(!hasNext()) {
+            return null;
+        }
+        Step step = steps.get(currentIndex);
+        currentIndex++;
+        return step;
+    }
+
     public enum Step {
         Up,
         UpRight,
@@ -16,12 +30,12 @@ public class Path {
         UpLeft;
     }
     public List<Step> steps = new ArrayList<>();
-    public Point follow(Point startingPoint) {
+    public Point followToTheEnd(Point startingPoint) {
         var newPoint = startingPoint.clone();
         this.steps.forEach(x -> System.out.println(x.name()));
-        for(Step s : steps) {
-            System.out.println("New starting point values : " + newPoint.y + " " + newPoint.x);
-            switch (s) {
+        while (this.hasNext()) {
+            Step nextStep = this.next();
+            switch (nextStep) {
                 case Step.Up -> {newPoint.x--;}
                 case Step.UpRight -> {newPoint.x--;newPoint.y++;}
                 case Step.Right -> {newPoint.y++;}
@@ -37,11 +51,12 @@ public class Path {
     public Point follow(Point startingPoint, int numSteps) {
         var newPoint = startingPoint.clone();
         int index = 1;
-        for(Step s : steps) {
+        while (this.hasNext()) {
             if(index > numSteps) {
                 break;
             }
-            switch (s) {
+            Step nextStep = this.next();
+            switch (nextStep) {
                 case Step.Up -> {newPoint.x--;}
                 case Step.UpRight -> {newPoint.x--;newPoint.y++;}
                 case Step.Right -> {newPoint.y++;}
@@ -51,6 +66,7 @@ public class Path {
                 case Step.Left -> {newPoint.y--;}
                 case Step.UpLeft -> {newPoint.x--;newPoint.y--;}
             }
+            index++;
         }
         return newPoint;
     }

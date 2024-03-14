@@ -20,6 +20,7 @@ import game.GameStateWatcher;
 import game.map.Mapper;
 import game.map.Point;
 import game.units.Unit;
+import ui.UIManager;
 
 import java.text.ParseException;
 import java.util.Collections;
@@ -61,8 +62,8 @@ public class MainLevel extends Level implements GameStateWatcher {
 
         this.mainPanel = new Panel();
         mainPanel.setLayoutManager(new GridLayout(1));
-        // REMOVE LATER
-        mainPanel.setTheme(new SimpleTheme(TextColor.ANSI.WHITE, TextColor.ANSI.GREEN_BRIGHT));
+
+        mainPanel.setTheme(GameOptions.getTheme());
         mainPanel.setSize(new TerminalSize(levelWidth,levelHeight));
 
         //  --- Setting top panel and its child panels ---
@@ -78,8 +79,8 @@ public class MainLevel extends Level implements GameStateWatcher {
                 1,1
         ));
 
-        // REMOVE LATER
-        topPanel.setTheme(new SimpleTheme(TextColor.ANSI.BLUE, TextColor.ANSI.RED));
+
+        topPanel.setTheme(GameOptions.getTheme());
 
         optionsPanel = new Panel();
         optionsPanel.setTheme(GameOptions.getTheme());
@@ -92,8 +93,7 @@ public class MainLevel extends Level implements GameStateWatcher {
         ));
         optionsPanel.setLayoutManager(new LinearLayout(Direction.HORIZONTAL));
         optionsPanel.setPreferredSize(new TerminalSize(levelWidth, 1));
-        // REMOVE LATER
-        optionsPanel.setTheme(new SimpleTheme(TextColor.ANSI.YELLOW, TextColor.ANSI.YELLOW));
+        optionsPanel.setTheme(GameOptions.getTheme());
 
         menuBar = new MenuBar();
         Menu optionsMenu = new Menu("Options");
@@ -159,8 +159,6 @@ public class MainLevel extends Level implements GameStateWatcher {
                 unit.get().setDestination(new Point(parsedRow, parsedCol));
             }
         }));
-        actionsMenu.add(new MenuItem("Move MG", new MoveMGsMenuItem()));
-        actionsMenu.add(new MenuItem("Defend point", new DefendSoldiersMenuItem()));
         // -------------------
 
         menuBar.add(optionsMenu);
@@ -183,17 +181,14 @@ public class MainLevel extends Level implements GameStateWatcher {
         speedPanel.setPreferredSize(new TerminalSize(
                 20, 1
             ));
-        // REMOVE LATER
-        speedPanel.setTheme(new SimpleTheme(TextColor.ANSI.YELLOW, TextColor.ANSI.GREEN));
+        speedPanel.setTheme(GameOptions.getTheme());
 
         speedLabel = new Label("abc");
         setProperSpeedLabel();
         // speedLabel.setTheme(GameOptions.getTheme());
-        // REMOVE LATER
-        speedLabel.setTheme(new SimpleTheme(TextColor.ANSI.BLUE_BRIGHT, TextColor.ANSI.GREEN));
+        speedLabel.setTheme(GameOptions.getTheme());
         speedPanel.addComponent(speedLabel);
-        // REMOVE LATER
-        speedPanel.setTheme(new SimpleTheme(TextColor.ANSI.CYAN, TextColor.ANSI.MAGENTA));
+        speedPanel.setTheme(GameOptions.getTheme());
 
         topPanel.addComponent(optionsPanel);
         topPanel.addComponent(speedPanel);
@@ -210,7 +205,7 @@ public class MainLevel extends Level implements GameStateWatcher {
                 true,
                 1,1
         ));
-        bottomPanel.setTheme(new SimpleTheme(TextColor.ANSI.GREEN, TextColor.ANSI.CYAN_BRIGHT));
+        bottomPanel.setTheme(GameOptions.getTheme());
 
         this.mapTable = new Table<>("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25");
         this.mapTable.setTheme(GameOptions.getTheme());
@@ -222,7 +217,7 @@ public class MainLevel extends Level implements GameStateWatcher {
                 1,1
         ));
         this.mapTable.setPreferredSize(new TerminalSize(70,70));
-        for(char[] line : mapper.getMap()) {
+        for(char[] line : mapper.getCopiedMap()) {
             this.mapTable.getTableModel().addRow(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[16],line[17],line[18],line[19],line[20],line[21],line[22],line[23],line[24]);
         }
         bottomPanel.addComponent(mapTable);
@@ -237,7 +232,6 @@ public class MainLevel extends Level implements GameStateWatcher {
                 true,
                 1,1
         ));
-        // REMOVE LATER!!!
         radioLabel.setTheme(GameOptions.getTheme());
         this.bottomPanel.addComponent(radioLabel);
 
@@ -250,6 +244,11 @@ public class MainLevel extends Level implements GameStateWatcher {
     @Override
     public void render() {
         this.textGUI.addWindow(this.window);
+        GameManager.getGameManager().getUiManager().diplayMessage("Welcome commander",
+                "Commander - we have been ambushed by a swarm of monster-like creatures.\n" +
+                        "Destroy them before they get to our base!\n" +
+                        "\n" +
+                        "Game difficulty: " + GameOptions.getDifficulty());
     }
 
     @Override
@@ -274,7 +273,6 @@ public class MainLevel extends Level implements GameStateWatcher {
             default -> {this.speedLabel.setText("ERR WRONG SPEED!!!");}
         }
     }
-
     public void setSpeed(int speed) {
         if(speed > 3) {
             this.speed = 3;
@@ -291,7 +289,7 @@ public class MainLevel extends Level implements GameStateWatcher {
         return speed;
     }
     public void renderMap() {
-        char[][] newMap = Mapper.getMapper().getMap();
+        char[][] newMap = Mapper.getMapper().getCopiedMap();
         for(int x = 0; x < 25; x++) {
             for(int y = 0; y < 25; y++) {
                 this.mapTable.getTableModel().setCell(y, x, newMap[x][y]);
@@ -299,7 +297,7 @@ public class MainLevel extends Level implements GameStateWatcher {
         }
     }
     public void renderRadio() {
-        // TODO
+        this.radioLabel.setText(GameManager.getGameManager().getRadioMessages());
     }
 
     @Override
@@ -313,19 +311,5 @@ class ExitMenuItem implements Runnable {
     @Override
     public void run() {
         System.exit(0);
-    }
-}
-class DefendSoldiersMenuItem implements Runnable {
-    @Override
-    public void run() {
-        System.out.println("Defending...");
-        // TODO
-    }
-}
-class MoveMGsMenuItem implements Runnable {
-    @Override
-    public void run() {
-        System.out.println("Moving MGs...");
-        // TODO
     }
 }

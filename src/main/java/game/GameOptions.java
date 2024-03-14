@@ -9,7 +9,8 @@ import com.googlecode.lanterna.gui2.WindowPostRenderer;
 
 public class GameOptions {
 
-    private static Difficulty difficulty = Difficulty.Medium;
+    private static Difficulty difficulty = Difficulty.Easy
+            ;
     private static GameTheme gameTheme = GameTheme.Black;
 
     public enum GameTheme {

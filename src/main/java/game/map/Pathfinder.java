@@ -16,11 +16,12 @@ public class Pathfinder {
         var result = nextMove(map_copy, path, point_a.clone(), point_b.clone());
 
         if(result.isEmpty()) {
+            System.out.println("Did not found the path");
             return Optional.empty();
         }
 
 
-
+        System.out.println("Found the path");
         return Optional.of(path);
     }
     private Optional<Path> nextMove(char[][] map, Path path, Point currentLocation, Point destination) {
@@ -30,7 +31,7 @@ public class Pathfinder {
         }
 
         // Mark current location as checked for future recursions
-        map[currentLocation.x][currentLocation.y] = 'W';
+        map[currentLocation.x][currentLocation.y] = 'x';
 
         // Get all possible directions
         List<Point> possibleDirections = new ArrayList<>();
@@ -51,7 +52,9 @@ public class Pathfinder {
 
         // if no more directions available - return empty
         if (possibleDirections.isEmpty()) {
-            path.steps.removeLast();
+            if(!path.steps.isEmpty()) {
+                path.steps.removeLast();
+            }
             return Optional.empty();
         }
 
@@ -62,7 +65,12 @@ public class Pathfinder {
         for(Point p : possibleDirections) {
             // List appending in loop, since if direction fails
             // it should be recursively removed
-            path.steps.add(currentLocation.getDirection(p));
+            var nextMove = currentLocation.getDirection(p);
+            if(nextMove.isEmpty()) {
+                System.out.println("Could not find path, unit is already there");
+                return Optional.empty();
+            }
+            path.steps.add(nextMove.get());
             var result = nextMove(map, path, p, destination);
             if (result.isEmpty()) {
                 continue;
@@ -71,6 +79,10 @@ public class Pathfinder {
             return result;
         }
         // If did not find the path - return empty
+        if(path.steps.isEmpty()) {
+            //System.out.println("Path empty, cannot remove last element");
+            return Optional.empty();
+        }
         path.steps.removeLast();
         return Optional.empty();
     }

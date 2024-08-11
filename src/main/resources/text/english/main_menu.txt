@@ -1,3 +1,0 @@
-play_button`> Play <
-options_button`> Options <
-quit_button`> Quit <

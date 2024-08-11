@@ -1,3 +1,0 @@
-test1`this is test text nr 1
-test2`tHis IS teST texT nr 2
-test3`tHis IS teST tExT nr 3 ____

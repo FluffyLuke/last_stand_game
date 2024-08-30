@@ -3,3 +3,25 @@
 -mm_play_button~Play
 -mm_options_button~Options
 -mm_quit_button~Exit
+
+-mmep_text~Are you sure?
+-mmep_confirm_button~Yes
+-mmep_return_button~No
+
+# Options
+
+-options_return_button~Return
+-options_difficulty_switch~Change Difficulty
+-options_lang_switch~Change Language
+
+# Main Level
+
+-ml_map_w~Map
+-ml_actions_w~Actions
+-ml_action_desc_w~description
+
+# Main selectable
+-ml_ms_name~Controll Panel
+-ml_ms_desc~Your controll panel.
+-ml_ms_quit_a_name~Quit
+-ml_ms_quit_a_desc~Quits the game.

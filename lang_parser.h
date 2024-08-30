@@ -3,21 +3,28 @@
 
 #include "mibs.h"
 
-typedef enum {
-    English
-} language;
+#define mibs_str(alloc, string) mibs_ds_from_cstr(alloc, string)
 
+typedef enum {
+    GL_English
+} Game_Language;
+
+// https://stackoverflow.com/questions/9907160/how-to-convert-enum-names-to-string-in-c
+// Initialized in main.c
+extern const char * const game_lang_str[];
+
+// TODO create a "deinit" function for text_unit_t
 typedef struct {
     Mibs_DString id;
     Mibs_DString text;
-} text_t;
+} text_unit_t;
 
-typedef Mibs_Da(text_t) text_vec_t;
+typedef Mibs_Da(text_unit_t) game_text_t;
 
-bool load_text(text_vec_t* vec, language lang);
+bool load_text(game_text_t* vec, Game_Language lang);
 
-typedef Mibs_Result(text_t) text_finding_result;
+typedef Mibs_Result(text_unit_t) text_getting_result;
 
-text_finding_result find_text_by_id(text_vec_t* vec, Mibs_DString id);
+text_getting_result get_text_by_id(game_text_t* vec, const char* id);
 
 #endif

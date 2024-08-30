@@ -18,7 +18,7 @@ bool build_main(void)
         }
     }
 
-    mibs_cmd_append(&alloc, &cmd, "gcc", "-o", OUT, SOURCES, "-lncurses");
+    mibs_cmd_append(&alloc, &cmd, "gcc", "-ggdb", "-o", OUT, SOURCES, "-lncursesw");
 
     return mibs_run_cmd(&alloc, &cmd, MIBS_CMD_SYNC, NULL).ok;
 }

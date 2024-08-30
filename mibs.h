@@ -1035,6 +1035,8 @@ typedef enum {
 // +mdoc #param         fmt/_
 // +mdoc #param_note    Format String
 #define mibs_log(lvl, fmt, ...) fprintf(MIBS_LOG_STREAM, "(%s): " fmt, mibs_array_get(mibs_log_lvl_prefixes, lvl), ##__VA_ARGS__)
+
+#define mibs_file_log(stream, lvl, fmt, ...) fprintf(stream, "(%s): " fmt, mibs_array_get(mibs_log_lvl_prefixes, lvl), ##__VA_ARGS__)
 extern const char* mibs_log_lvl_prefixes[4];
 
 #if defined(MIBS_PLATFORM_UNIX)

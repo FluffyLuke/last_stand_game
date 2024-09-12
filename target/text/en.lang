@@ -25,3 +25,8 @@
 -ml_ms_desc~Your controll panel.
 -ml_ms_quit_a_name~Quit
 -ml_ms_quit_a_desc~Quits the game.
+
+# Units
+
+-rc_name~Reacon Squad
+-rc_desc~Reacon Squad description placeholder

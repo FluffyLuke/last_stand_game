@@ -10,7 +10,7 @@ bool build_main(void)
 
 
     #define OUT "./target/game"
-    #define SOURCES "main.c", "game.c", "lang_parser.c"
+    #define SOURCES "main.c", "game.c", "lang_parser.c", "levels/map.c"
     if(!mibs_path_exists("target")) {
         if(!mibs_create_folder_rec("target")) {
             mibs_log(MIBS_LL_INFO, "Cannot create target dir!\n");
@@ -18,7 +18,7 @@ bool build_main(void)
         }
     }
 
-    mibs_cmd_append(&alloc, &cmd, "gcc", "-ggdb", "-o", OUT, SOURCES, "-lncursesw");
+    mibs_cmd_append(&alloc, &cmd, "gcc", "-ggdb", "-o", OUT, SOURCES, "-lncursesw", "-lm");
 
     return mibs_run_cmd(&alloc, &cmd, MIBS_CMD_SYNC, NULL).ok;
 }

@@ -83,15 +83,29 @@ typedef enum {
 } Game_Difficulty;
 
 typedef enum {
-    CP_RED_TEXT = 1
-} Color_Pairs;
-
-typedef enum {
     GS_PAUSED = 0,
     GS_NORMAL = 1,
-    GS_FASTER = 2,
-    GS_FASTEST = 3
+    GS_FASTER = 3,
+    GS_FASTEST = 5
 } Game_Speed;
+
+// typedef enum {
+//     CC_TERRAIN_LOW = 8, // Ncurses has 8 basic colors, indexed from 0
+//     CC_TERRAIN_MEDIUM,
+//     CC_TERRAIN_HIGH
+// } Custom_Color;
+
+typedef enum {
+    CP_RED_TEXT = 1,
+    CP_ENEMY,
+    CP_ALLY,
+    CP_GRASS,
+    CP_MOUNTAIN,
+    CP_WATER,
+    CP_TERRAIN_LOW,
+    CP_TERRAIN_MEDIUM,
+    CP_TERRAIN_HIGH
+} Color_Pairs;
 
 // https://stackoverflow.com/questions/9907160/how-to-convert-enum-names-to-string-in-c
 // Initialized in main.c
@@ -161,16 +175,40 @@ int32_t calculate_padding_cstr(const char* text, uint32_t size_x);
 // Main game
 // --------------------
 
+#define REACON_SYMBOL 'r'
+#define SQUAD_SYMBOL 's'
+#define MOUTAIN_SYMBOL '^'
+#define WATER_SYMBOL '~'
+
 typedef struct {
     text_unit_t name;
     text_unit_t desciption;
     custom_items_vec* actions;
 } selectable_t;
 
-typedef struct {
+typedef enum {
+    UT_REACON,
+    UT_SQUAD,
+} Unit_Type;
+
+typedef struct unit_t {
     text_unit_t name;
     text_unit_t desciption;
     custom_items_vec* actions;
+
+    Unit_Type type;
+    bool enemy;
+
+    int32_t health;
+    int32_t armor;
+    int32_t size;
+    int32_t sight_range;
+    int32_t attack_range;
+
+    // void (*init)(unit_t* unit);
+    void (*deinit)(struct unit_t* unit);
+    void* data;
+    game_ctx_t* game_ctx;
 } unit_t;
 typedef Mibs_Da(unit_t*) units_vec;
 
@@ -182,8 +220,8 @@ typedef struct {
 typedef Mibs_Da(unit_t*) buildings_vec;
 
 typedef struct {
-    //int32_t height;
-    double height;
+    int32_t height;
+    //double height;
     bool passable;
 } terrain_t;
 
@@ -203,7 +241,23 @@ typedef struct {
 
 #define vector2(n_x, n_y) { .x = (n_x), .y = n_y }
 
+typedef struct {
+    int32_t x;
+    int32_t y;
+} point_t;
+
+#define point2(n_x, n_y) { .x = (n_x), .y = n_y }
+
 void generate_map(map_data_t* map, int32_t size_y, int32_t size_x);
 void deinit_map(map_data_t* map);
+
+typedef struct {
+    text_unit_t task_name;
+    bool finished;
+    bool canceled;
+    point_t point;
+} map_task_t;
+
+#define map_task(t_n) { .task_name = (t_n), .finished = false, .canceled = false, .point.x = -1, .point.y = -1}
 
 #endif

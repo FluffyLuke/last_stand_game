@@ -29,8 +29,6 @@ typedef struct {
     custom_item_t* current_button;
 } ep_data;
 
-#endif
-
 #ifdef __LEVELS
 
 void ep_confirm(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
@@ -203,7 +201,7 @@ void run_main_menu_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
         data->current_button->is_selected = true;
     }
 
-    if(input == '\n' || input == KEY_LEFT || input == 'd') {
+    if(input == '\n' || input == KEY_RIGHT || input == 'd') {
         data->current_button->custom_action(loop_ctx, game_ctx, NULL);
     }
 }
@@ -254,4 +252,5 @@ void close_main_menu(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     free(loop_ctx->current_level->data);
 }
 
+#endif
 #endif

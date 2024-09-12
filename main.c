@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <locale.h>
+#include <ncurses/curses.h>
 #include <stdio.h>
 
 #define MIBS_IMPL
@@ -18,7 +19,6 @@ const char * const game_difficulty_str[] = {
 const char * const game_lang_str[] = {
     [GL_English] = "English",
 };
-
 
 int main(int argc, char** argv) {
     srand(time(NULL));
@@ -62,11 +62,19 @@ int main(int argc, char** argv) {
 
     start_color();
 
+    // TODO changing color functionality is not working
+    // for now use basic colors and pairs
+    // if(!can_change_color()) {
+    //     mibs_file_log(logs, MIBS_LL_ERROR, "Terminal does not support changing color!\n");
+    //     mibs_file_log(stderr, MIBS_LL_ERROR, "Terminal does not support changing color!\n");
+    //     mibs_file_log(stderr, MIBS_LL_ERROR, "Your terminal supports %d colors.\n", COLORS);
+    //     fclose(logs);
+    //     return -1;
+    // }
+
     cbreak();
     noecho();
-    
 
-    //keypad(stdscr, TRUE);
     mibs_file_log(game_ctx.logs, MIBS_LL_INFO, "Starting game loop\n");
     bool result = start_game_loop(&game_ctx);
     endwin();

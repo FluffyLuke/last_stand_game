@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -38,14 +39,6 @@ void create_permutation() {
 		permutation[i] = i;
 	}
 
-    // Shuffle perm table
-	// for(int32_t e = perm_size-1; e > 0; e--) {
-	// 	int32_t index = rand() % e;
-	// 	int32_t temp = permutation[e];
-	// 	permutation[e] = permutation[index];
-	// 	permutation[index] = temp;
-	// }
-
     for(int32_t e = perm_size-1; e > 0; e--) {
 		float r = (float)rand() / (float)RAND_MAX;
         int64_t index = rintf(r*(e-1));
@@ -69,23 +62,25 @@ double Lerp(double t, double a1, double a2) {
 }
 
 double noise2d(double x, double y) {
+	//printf("\n=======\n");
     int32_t px = (int32_t)floor(x) % 255;
 	int32_t py = (int32_t)floor(y) % 255;
 
 	double xf = x-floor(x);
 	double yf = y-floor(y);
 
+    //printf("Fade xf: %f\n", xf);
+    //printf("Fade yf: %f\n\n", yf);
+
 	vector2_t tr = vector2(xf-1.0, yf-1.0);
 	vector2_t tl = vector2(xf, yf-1.0);
 	vector2_t br = vector2(xf-1.0, yf);
 	vector2_t bl = vector2(xf, yf);
 
-   printf("\nmy point : %f %f\n", x, y);
-
-    printf("vec tr: %f %f\n", tr.x, tr.y);
-    printf("vec tl: %f %f\n", tl.x, tl.y);
-    printf("vec bt: %f %f\n", br.x, br.y);
-    printf("vec bl: %f %f\n", bl.x, bl.y);
+	//printf("tr vec: %fx %fy \n", tr.x, tr.y);
+	//printf("tl vec: %fx %fy \n", tl.x, tl.y);
+	//printf("br vec: %fx %fy \n", br.x, br.y);
+	//printf("bl vec: %fx %fy \n", bl.x, bl.y);
 
     int32_t value_tr = permutation[permutation[px+1]+py+1];
 	int32_t value_tl = permutation[permutation[px]+py+1];
@@ -97,20 +92,21 @@ double noise2d(double x, double y) {
 	double dot_br = dot_product(br, constant_vec(value_br));
 	double dot_bl = dot_product(bl, constant_vec(value_bl));
 
-    printf("\nDot product tr: %f\n", dot_tr);
-    printf("\nDot product tl: %f\n", dot_tl);
-    printf("\nDot product bt: %f\n", dot_br);
-    printf("\nDot product bl: %f\n", dot_bl);
+	//printf("\n\ndp tr %f \n", dot_tr);
+	//printf("dp tl %f \n", dot_tl);
+	//printf("dp br %f \n", dot_br);
+	//printf("dp bl %f \n", dot_bl);
 
     double u = Fade(xf);
 	double v = Fade(yf);
 	
 	return Lerp(u,
-		Lerp(v, dot_bl, value_tl),
+		Lerp(v, dot_bl, dot_tl),
 		Lerp(v, dot_br, dot_tr)
 	);
 }
 
+// TODO sometimes there is too much water and map can be split
 void generate_map(map_data_t* map, int32_t size_y, int32_t size_x) {
     create_permutation();
 
@@ -123,13 +119,25 @@ void generate_map(map_data_t* map, int32_t size_y, int32_t size_x) {
 
     for(int32_t y = 0; y < size_y; y++) {
         for(int32_t x = 0; x < size_x; x++) {
-            double n = noise2d(x*0.15, y*0.15);
-            //n *= 100;
+            double n = noise2d((x+1)*0.05, (y+1)*0.05);
+            n += 1.0;
+		    n /= 2.0;
+			n *= 31;
+			n -= 9;
 
-            //map->terrain[y][x].height = (int32_t)round(n);
-            map->terrain[y][x].height = n;
-            map->terrain[y][x].passable = true;
+			map->terrain[y][x].passable = true;
+			if(n < 0) {
+				n = 0;
+				map->terrain[y][x].passable = false;
+			} else if(n > 10) {
+				n = 10;
+				map->terrain[y][x].passable = false;
+			}
+
+            map->terrain[y][x].height = (int32_t)round(n);
+            //map->terrain[y][x].height = n;
         }
+		//printf("\n");
     }
 }
 

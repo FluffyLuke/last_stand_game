@@ -134,8 +134,24 @@ bool start_game_loop(game_ctx_t* game_ctx) {
     keypad(input_window, TRUE);
     nodelay(input_window, TRUE);
 
+    // Colors
+    // init_color(CC_TERRAIN_LOW, 195, 1000, 195);
+    // init_color(CC_TERRAIN_MEDIUM, 62, 560, 62);
+    // init_color(CC_TERRAIN_HIGH, 3, 350, 3);
+
     // Color pairs
     init_pair(CP_RED_TEXT, COLOR_RED, COLOR_BLACK);
+
+    init_pair(CP_ENEMY, COLOR_BLACK, COLOR_RED);
+    init_pair(CP_ALLY, COLOR_BLACK, COLOR_BLUE);
+
+    init_pair(CP_GRASS, COLOR_BLACK, COLOR_GREEN);
+    init_pair(CP_MOUNTAIN, COLOR_BLACK, COLOR_WHITE);
+    init_pair(CP_WATER, COLOR_BLACK, COLOR_CYAN);
+
+    init_pair(CP_TERRAIN_LOW, COLOR_BLACK, COLOR_GREEN);
+    init_pair(CP_TERRAIN_MEDIUM, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(CP_TERRAIN_HIGH, COLOR_BLACK, COLOR_RED);
 
     // Tick calculation initialization
     struct timeval tv;
@@ -185,7 +201,7 @@ bool start_game_loop(game_ctx_t* game_ctx) {
             current_lvl->init(&loop_ctx, game_ctx);
 
         // Run level logic
-        if(game_ctx->speed != GS_PAUSED)
+        if(game_ctx->popups.count == 0)
             current_lvl->run_logic(&loop_ctx, game_ctx);
 
         // Render level

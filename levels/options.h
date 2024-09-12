@@ -14,8 +14,6 @@ typedef struct {
     uint8_t bn;
 } options_data;
 
-#endif
-
 #ifdef __LEVELS
 
 void options_change_difficulty(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
@@ -177,4 +175,5 @@ void close_options(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     free(loop_ctx->current_level->data);
 }
 
+#endif
 #endif

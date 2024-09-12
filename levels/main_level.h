@@ -133,10 +133,6 @@ void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     level->data = data;
     level->is_initialized = true;
     level->should_close = false;
-
-    map_task_t* task = (map_task_t*)malloc(sizeof(map_task_t));
-    init_map_task(task, get_text_by_id(&game_ctx->game_text, "a").value);
-    change_map_task(data, task);
 }
 
 void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {

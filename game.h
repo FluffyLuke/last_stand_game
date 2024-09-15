@@ -89,6 +89,14 @@ typedef enum {
     GS_FASTEST = 5
 } Game_Speed;
 
+typedef struct {
+    int32_t x;
+    int32_t y;
+} point_t;
+
+#define point2(n_x, n_y) { .x = (n_x), .y = n_y }
+bool compare_points(point_t point_a, point_t point_b);
+
 // typedef enum {
 //     CC_TERRAIN_LOW = 8, // Ncurses has 8 basic colors, indexed from 0
 //     CC_TERRAIN_MEDIUM,
@@ -197,8 +205,10 @@ typedef struct unit_t {
     custom_items_vec* actions;
 
     Unit_Type type;
+    point_t position;
     bool enemy;
 
+    int8_t symbol;
     int32_t health;
     int32_t armor;
     int32_t size;
@@ -210,14 +220,21 @@ typedef struct unit_t {
     void* data;
     game_ctx_t* game_ctx;
 } unit_t;
+
+void create_unit(game_ctx_t* game_ctx, unit_t* unit, Unit_Type type);
+void set_unit_position(unit_t* unit, point_t* new_position);
+void set_unit_positionyx(unit_t* unit, int32_t y, int32_t x);
+
 typedef Mibs_Da(unit_t*) units_vec;
 
 typedef struct {
     text_unit_t name;
     text_unit_t desciption;
     custom_items_vec* actions;
+
+    point_t position;
 } building_t;
-typedef Mibs_Da(unit_t*) buildings_vec;
+typedef Mibs_Da(building_t*) buildings_vec;
 
 typedef struct {
     int32_t height;
@@ -241,15 +258,10 @@ typedef struct {
 
 #define vector2(n_x, n_y) { .x = (n_x), .y = n_y }
 
-typedef struct {
-    int32_t x;
-    int32_t y;
-} point_t;
-
-#define point2(n_x, n_y) { .x = (n_x), .y = n_y }
-
+void init_map(map_data_t* map);
 void generate_map(map_data_t* map, int32_t size_y, int32_t size_x);
 void deinit_map(map_data_t* map);
+void add_unit(map_data_t* map, unit_t* unit);
 
 typedef struct {
     text_unit_t task_name;
@@ -257,6 +269,15 @@ typedef struct {
     bool canceled;
     point_t point;
 } map_task_t;
+
+typedef struct {
+	terrain_t* terrain;
+	unit_t* unit;
+	building_t* building;
+	point_t position;
+} map_finding_result;
+
+map_finding_result find_on_map(map_data_t* map, point_t position);
 
 #define map_task(t_n) { .task_name = (t_n), .finished = false, .canceled = false, .point.x = -1, .point.y = -1}
 

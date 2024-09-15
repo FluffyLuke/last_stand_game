@@ -14,6 +14,10 @@ double dot_product(vector2_t v1, vector2_t v2) {
     return (v1.x * v2.x) + (v1.y * v2.y);
 }
 
+bool compare_points(point_t point_a, point_t point_b) {
+	return (point_a.x == point_b.x && point_a.y == point_b.y);
+}
+
 vector2_t constant_vec(int32_t v) {
 	// v is the value from the permutation table
 	int32_t h = v % 3;
@@ -112,7 +116,7 @@ void generate_map(map_data_t* map, int32_t size_y, int32_t size_x) {
 
     map->size_x = size_x;
     map->size_y = size_y;
-    map->terrain = (terrain_t**)malloc(size_y * sizeof(terrain_t*));
+	map->terrain = (terrain_t**)malloc(size_y * sizeof(terrain_t*));
     for(int32_t i = 0; i < size_y; i++) {
         map->terrain[i] = (terrain_t*)malloc(size_x * sizeof(terrain_t));
     }
@@ -141,11 +145,64 @@ void generate_map(map_data_t* map, int32_t size_y, int32_t size_x) {
     }
 }
 
-void deinit_map(map_data_t* map) {
-    for(int32_t i = 0; i < map->size_y; i++) {
-        free(map->terrain[i]);
-    }
-    free(map->terrain);
+void init_map(map_data_t* map) {
+	map->units = (units_vec*)malloc(sizeof(units_vec));
+	memset(map->units, 0, sizeof(units_vec));
+	map->buildings = (buildings_vec*)malloc(sizeof(buildings_vec));
+	memset(map->buildings, 0, sizeof(buildings_vec));
+
+	map->terrain = NULL;
 }
 
+void deinit_map(map_data_t* map) {
+	// If map was generated
+    if(map->terrain != NULL) {
+		for(int32_t i = 0; i < map->size_y; i++) {
+			free(map->terrain[i]);
+		}
+		free(map->terrain);
+	}
 
+	free(map->units);
+	free(map->buildings);
+}
+
+void add_unit(map_data_t* map, unit_t* unit) {
+	mibs_da_append(&mibs_make_default_allocator(), map->units, unit);
+}
+
+void remove_unit(map_data_t* map, unit_t* unit) {
+	for(int32_t i = 0; i < map->units->count; i++) {
+		if(map->units->items[i] == unit) mibs_da_remove(map->units, i);
+	}
+}
+
+map_finding_result find_on_map(map_data_t* map, point_t position) {
+	map_finding_result result;
+	result.building = NULL;
+	result.terrain = NULL;
+	result.unit = NULL;
+
+	result.position = position;
+	if(position.x >= 0 && position.y >= 0 && position.x < map->size_x && position.y < map->size_y)
+		result.terrain = &map->terrain[position.y][position.x];
+
+	//mibs_log(MIBS_LL_DEBUG, "Marker position: y-%d, x-%d\n", position.y, position.x);
+	for(int32_t i = 0; i < map->units->count; i++) {
+		unit_t* unit = map->units->items[i];
+		//mibs_log(MIBS_LL_DEBUG, "Unit position: y-%d, x-%d\n", unit->position.y, unit->position.x);
+		if(compare_points(unit->position, position)) {
+			result.unit = map->units->items[i];
+			break;
+		}
+	}
+
+	for(int32_t i = 0; i < map->buildings->count; i++) {
+		if(compare_points(map->buildings->items[i]->position, position)) {
+			result.building = map->buildings->items[i];
+			break;
+		}
+	}
+
+	return result;
+}

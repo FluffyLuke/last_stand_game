@@ -30,6 +30,8 @@ typedef struct {
     selectable_t* current_selectable;
     custom_item_t* current_action;
 
+    map_task_t select_task; 
+
     // Map data
     struct {
         map_data_t* data;
@@ -68,6 +70,7 @@ void init_map_task(map_task_t* task, text_unit_t text_unit) {
     task->point.y = -1;
 }
 
+#define __LEVELS
 #ifdef __LEVELS
 
 void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
@@ -104,7 +107,6 @@ void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     data->all_ticks = 0;
 
     uint32_t map_size_y, map_size_x;
-    data->map.data = (map_data_t*)malloc(sizeof(map_data_t));
     switch (game_ctx->difficulty) {
         case GD_EASY: {
             map_size_y = 50;
@@ -128,7 +130,15 @@ void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
         }
     }
 
+    init_map_task(&data->select_task, get_text_by_id(&game_ctx->game_text, "select_task").value);
+    data->map.data = (map_data_t*)malloc(sizeof(map_data_t));
+    init_map(data->map.data);
     generate_map(data->map.data, map_size_y, map_size_x);
+    unit_t* unit = (unit_t*)malloc(sizeof(unit_t));
+	create_unit(game_ctx, unit, UT_REACON);
+    set_unit_positionyx(unit, 0, 0);
+    add_unit(data->map.data, unit);
+
 
     level->data = data;
     level->is_initialized = true;
@@ -169,7 +179,7 @@ void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
                 data->current_action->is_selected = true;
             }
         }
-        if(input == KEY_DOWN || input == 's') {
+        else if(input == KEY_DOWN || input == 's') {
             if(i > 0) {
                 i--;
                 data->current_action->is_selected = false;
@@ -177,8 +187,11 @@ void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
                 data->current_action->is_selected = true;
             }
         }
-        if(input == KEY_RIGHT || input == 'd') {
+        else if(input == KEY_RIGHT || input == 'd') {
             data->current_action->custom_action(loop_ctx, game_ctx, NULL);
+        } 
+        else if(input == 'p') {
+            data->current_selectable = &data->main_selectable;
         }
     }
 
@@ -191,20 +204,33 @@ void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
         data->map.selector_y = data->map_w_y / 2;
     }
 
+    if(data->select_task.finished) {
+        // Restart task
+        map_finding_result result = find_on_map(data->map.data, data->select_task.point);
+        if(result.building != NULL) data->current_selectable = (selectable_t*)result.building;
+        else if(result.unit != NULL) data->current_selectable = (selectable_t*)result.unit;
+        init_map_task(&data->select_task, get_text_by_id(&game_ctx->game_text, "select_task").value);
+    }
+
     if(data->current_window == data->map_w) {
         // Normal map
         if(data->map.current_task == NULL) {
             if(input == KEY_UP || input == 'w') {
             data->map.offset_y--;
             }
-            if(input == KEY_DOWN || input == 's') {
+            else if(input == KEY_DOWN || input == 's') {
                 data->map.offset_y++;
             }
-            if(input == KEY_RIGHT || input == 'd') {
+            else if(input == KEY_RIGHT || input == 'd') {
                 data->map.offset_x++;
             }
-            if(input == KEY_LEFT || input == 'a') {
+            else if(input == KEY_LEFT || input == 'a') {
                 data->map.offset_x--;
+            }
+            else if(input == 'r' && data->map.current_task == NULL) {
+                change_map_task(data, &data->select_task);
+            } else if(input == 'p') {
+                data->current_selectable = &data->main_selectable;
             }
         // Selecting
         } else {
@@ -226,11 +252,11 @@ void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
             } 
             else if(input == '\n') {
                 data->map.current_task->finished = true;
-                data->map.current_task->point.x = data->map.selector_x;
-                data->map.current_task->point.x = data->map.selector_y;
+                data->map.current_task->point.x = data->map.offset_x + data->map.selector_x;
+                data->map.current_task->point.y = data->map.offset_y + data->map.selector_y;
                 data->map.current_task = NULL;
             }
-            else if(input == KEY_BACKSPACE) {
+            else if(input == 'p') {
                 data->map.current_task->finished = true;
                 data->map.current_task->canceled = true;
                 data->map.current_task = NULL;
@@ -258,6 +284,7 @@ void render_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     } else {
         mvwprintw(main_window, 0, 16, "%s", get_text("ml_actions_w"));
     }
+
     for(int32_t i = 0; i < data->current_selectable->actions->count; i++) {
         custom_item_t* item = data->current_selectable->actions->items[i];
         if(item->is_selected) wattron(data->actions_w, A_STANDOUT);
@@ -302,7 +329,7 @@ void render_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     if(game_ctx->speed == GS_FASTEST) wattroff(main_window, A_STANDOUT);
 
 
-    // Map-terrain (normal)
+    // Map-terrain 
     for(int32_t iy = 0; iy < data->map_w_y; iy++) {
         for(int32_t ix = 0; ix < data->map_w_x; ix++) {
             if((iy+data->map.offset_y) >= data->map.data->size_y || (ix+data->map.offset_x) >= data->map.data->size_x) continue;
@@ -324,7 +351,24 @@ void render_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
         }
     }
 
-    // Map-terrain (select)
+    // Map-units
+    units_vec* units = data->map.data->units;
+    for(int32_t i = 0; i < units->count; i++) {
+        unit_t* unit = units->items[i];
+
+        int32_t color;
+        if(unit->enemy) color = COLOR_PAIR(CP_ENEMY);
+        else color = COLOR_PAIR(CP_ALLY);
+
+        int32_t unit_y = unit->position.y-data->map.offset_y;
+        int32_t unit_x = unit->position.x-data->map.offset_x;
+
+        wattron(data->map_w, color);
+        mvwprintw(data->map_w, unit_y, unit_x, "%c", unit->symbol);
+        wattroff(data->map_w, color);
+    }
+
+    // Select tool
     if(data->map.current_task != NULL) {
         mvwvline(data->map_w, data->map.selector_y-2, data->map.selector_x, '|', 2);
         mvwvline(data->map_w, data->map.selector_y+1, data->map.selector_x, '|', 2);
@@ -337,8 +381,10 @@ void render_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     mvwprintw(data->selectable_desc_w, 0, 0, "%s", data->current_selectable->desciption.text.items);
 
     // Selected action description (bottom-right)
-    mvwprintw(main_window, 18, 30, "%s %s", data->current_action->name.text.items, get_text("ml_action_desc_w"));
-    mvwprintw(data->action_desc_w, 0, 0, "%s", data->current_action->description.text.items);
+    if(data->current_selectable->actions->count > 0) {
+        mvwprintw(main_window, 18, 30, "%s %s", data->current_action->name.text.items, get_text("ml_action_desc_w"));
+        mvwprintw(data->action_desc_w, 0, 0, "%s", data->current_action->description.text.items);
+    }
 }
 
 void close_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {

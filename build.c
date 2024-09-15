@@ -10,7 +10,7 @@ bool build_main(void)
 
 
     #define OUT "./target/game"
-    #define SOURCES "main.c", "game.c", "lang_parser.c", "levels/map.c"
+    #define SOURCES "main.c", "game.c", "lang_parser.c", "unit.c", "levels/map.c"
     if(!mibs_path_exists("target")) {
         if(!mibs_create_folder_rec("target")) {
             mibs_log(MIBS_LL_INFO, "Cannot create target dir!\n");

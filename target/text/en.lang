@@ -21,12 +21,12 @@
 -ml_action_desc_w~description
 
 # Main selectable
--ml_ms_name~Controll Panel
--ml_ms_desc~Your controll panel.
+-ml_ms_name~Control Panel
+-ml_ms_desc~Your control panel.
 -ml_ms_quit_a_name~Quit
 -ml_ms_quit_a_desc~Quits the game.
 
 # Units
 
--rc_name~Reacon Squad
--rc_desc~Reacon Squad description placeholder
+-rc_name~Recon Squad
+-rc_desc~Recon Squad description placeholder

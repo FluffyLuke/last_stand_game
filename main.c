@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
     }
 
     game_ctx_t game_ctx = {0};
+    memset(&game_ctx.game_text, 0, sizeof(game_text_t));
     game_ctx.alloc = mibs_make_default_allocator();
     game_ctx.logs = logs;
     game_ctx.levels = prepare_levels(&game_ctx.alloc);
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
     game_ctx.min_y = MAIN_WINDOW_Y;
     game_ctx.difficulty = GD_NORMAL;
 
-    // Load default text
+    // // Load default text
     if(!load_text(&game_ctx.game_text, GL_English)) {
         mibs_file_log(logs, MIBS_LL_ERROR, "Cannot read game text!\n");
         mibs_file_log(stderr, MIBS_LL_ERROR, "Cannot read game text!\n");

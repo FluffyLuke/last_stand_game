@@ -4,11 +4,11 @@
 #include "../game.h"
 
 typedef struct {
-    custom_item_t language_switch;
-    custom_item_t difficulty_switch;
-    custom_item_t mm_return_button;
+    action_task_t language_switch;
+    action_task_t difficulty_switch;
+    action_task_t mm_return_button;
 
-    custom_item_t* current_item;
+    action_task_t* current_item;
 
     // Button number
     uint8_t bn;
@@ -16,7 +16,8 @@ typedef struct {
 
 #ifdef __LEVELS
 
-void options_change_difficulty(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+// TODO fix options
+void options_change_difficulty(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     int8_t i = *(int8_t*)data;
     if(i > 0) {
         if(game_ctx->difficulty != GD_HARD) game_ctx->difficulty++;
@@ -25,7 +26,7 @@ void options_change_difficulty(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void*
     }
 }
 
-void options_change_language(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void options_change_language(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     // Only one language is available
     // int8_t i = *(int8_t*)data;
     // limited_num_t n = mibs_create_limited_num(game_ctx->difficulty, 0, DIFFICULTY_AMOUNT-1);
@@ -38,7 +39,7 @@ void options_change_language(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* d
     // }
 }
 
-void options_return(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void options_return(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     loop_ctx->current_level->should_close = true;
     loop_ctx->current_level->next_level_id = LI_MAIN_MENU;
 };
@@ -99,14 +100,17 @@ void run_options_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     }
 
     static int32_t action_data;
+    static action_task_t action = {
+        .data = &action_data,
+    };
     if(input == '\n' || input == KEY_RIGHT || input == 'd') {
         action_data = 1;
-        data->current_item->custom_action(loop_ctx, game_ctx, &action_data);
+        data->current_item->custom_action(loop_ctx, game_ctx, &action);
     }
 
     if(input == KEY_LEFT || input == 'a') {
         action_data = -1;
-        data->current_item->custom_action(loop_ctx, game_ctx, &action_data);
+        data->current_item->custom_action(loop_ctx, game_ctx, &action);
     }
 }
 

@@ -23,10 +23,21 @@
 # Main selectable
 -ml_ms_name~Control Panel
 -ml_ms_desc~Your control panel.
+
 -ml_ms_quit_a_name~Quit
 -ml_ms_quit_a_desc~Quits the game.
 
-# Units
+# Unit selection action
+-ml_usa_name~Unit selection
+-ml_usa_desc~Select an unit
+
+# === Units ===
 
 -rc_name~Recon Squad
 -rc_desc~Recon Squad description placeholder
+
+
+# Actions
+
+-move_unit~Move
+-move_unit_desc~Move

@@ -97,6 +97,15 @@ typedef struct {
 #define point2(n_x, n_y) { .x = (n_x), .y = n_y }
 bool compare_points(point_t point_a, point_t point_b);
 
+typedef struct {
+    double sum;
+    double border;
+} tick_timer_t;
+
+void init_tick_timer(tick_timer_t* timer, double border);
+bool check_tick_timer(tick_timer_t* timer);
+bool add_ticks_to_timer(tick_timer_t* timer, double delta_ticks);
+
 // typedef enum {
 //     CC_TERRAIN_LOW = 8, // Ncurses has 8 basic colors, indexed from 0
 //     CC_TERRAIN_MEDIUM,
@@ -145,35 +154,63 @@ typedef struct loop_ctx_t {
     double delta_ticks;
     level_t* current_level;
     popup_t* current_popup;
-    uint32_t ticks;
+    double ticks;
     WINDOW* main_window;
 } loop_ctx_t;
-
-typedef struct {
-    text_unit_t name;
-    text_unit_t description;
-    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data);
-    // This attributes ale only used for rendering, not logic
-    bool is_selected;
-    bool is_clicked;
-} custom_item_t;
-
-typedef Mibs_Da(custom_item_t*) custom_items_vec;
 
 bool start_game_loop(game_ctx_t* game_ctx);
 level_vec_t prepare_levels(Mibs_Default_Allocator* alloc);
 
-void custom_item_init(
-    game_ctx_t* game_ctx,
-    custom_item_t* item,
-    const char* name_id, 
-    const char* desc_id, 
-    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data)
-    );
-
 // Used when no action needs to be provided
 void empty_action(WINDOW* main_window, level_t* level, game_ctx_t* game_ctx, void* data);
-void exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data);
+
+
+typedef struct {
+	struct terrain_t* terrain;
+	struct unit_t* unit;
+	struct building_t* building;
+	point_t position;
+} map_finding_result;
+
+typedef struct map_task_t {
+    text_unit_t task_name;
+    bool finished;
+    bool canceled;
+    map_finding_result result;
+} map_task_t;
+
+typedef struct action_task_t {
+    bool finished;
+    bool canceled;
+    bool has_map_task;
+    map_task_t map_task;
+    void* selectable;
+    void* data;
+    //void (*reset_action_data)(struct action_task_t* task);
+    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, struct action_task_t* task);
+
+    text_unit_t name;
+    text_unit_t description;
+
+    // Used only for rendering
+    bool is_selected;
+} action_task_t;
+typedef Mibs_Da(action_task_t*) actions_vec;
+
+void init_action_task(
+    struct action_task_t* task,
+    void* selectable,
+    void* data,
+    bool has_map_task,
+    text_unit_t map_task_name,
+    //void (*reset_action_data)(action_task_t* task),
+    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, struct action_task_t* task),
+
+    text_unit_t name,
+    text_unit_t description
+);
+
+void exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, struct action_task_t* data);
 
 void center_window(WINDOW* parentwin, WINDOW* subwin);
 int32_t calculate_padding_ds(Mibs_DString* text, uint32_t size_x);
@@ -191,7 +228,7 @@ int32_t calculate_padding_cstr(const char* text, uint32_t size_x);
 typedef struct {
     text_unit_t name;
     text_unit_t desciption;
-    custom_items_vec* actions;
+    actions_vec actions;
 } selectable_t;
 
 typedef enum {
@@ -199,14 +236,23 @@ typedef enum {
     UT_SQUAD,
 } Unit_Type;
 
+typedef struct {
+    point_t point;
+    tick_timer_t move_timer;
+} move_point_t;
+
+typedef Mibs_Da(move_point_t) move_points;
+
 typedef struct unit_t {
     text_unit_t name;
     text_unit_t desciption;
-    custom_items_vec* actions;
+    actions_vec actions;
 
     Unit_Type type;
     point_t position;
     bool enemy;
+
+    move_points path;
 
     int8_t symbol;
     int32_t health;
@@ -215,8 +261,8 @@ typedef struct unit_t {
     int32_t sight_range;
     int32_t attack_range;
 
-    // void (*init)(unit_t* unit);
-    void (*deinit)(struct unit_t* unit);
+    void (*run_logic)(game_ctx_t* game_ctx, loop_ctx_t* loop_ctx, struct unit_t* unit);
+    void (*deinit)(game_ctx_t* game_ctx, struct unit_t* unit);
     void* data;
     game_ctx_t* game_ctx;
 } unit_t;
@@ -227,16 +273,16 @@ void set_unit_positionyx(unit_t* unit, int32_t y, int32_t x);
 
 typedef Mibs_Da(unit_t*) units_vec;
 
-typedef struct {
+typedef struct building_t {
     text_unit_t name;
     text_unit_t desciption;
-    custom_items_vec* actions;
+    actions_vec actions;
 
     point_t position;
 } building_t;
 typedef Mibs_Da(building_t*) buildings_vec;
 
-typedef struct {
+typedef struct terrain_t {
     int32_t height;
     //double height;
     bool passable;
@@ -263,19 +309,11 @@ void generate_map(map_data_t* map, int32_t size_y, int32_t size_x);
 void deinit_map(map_data_t* map);
 void add_unit(map_data_t* map, unit_t* unit);
 
-typedef struct {
-    text_unit_t task_name;
-    bool finished;
-    bool canceled;
-    point_t point;
-} map_task_t;
+void refresh_map_task(map_task_t* task);
 
-typedef struct {
-	terrain_t* terrain;
-	unit_t* unit;
-	building_t* building;
-	point_t position;
-} map_finding_result;
+void init_map_task(map_task_t* task, text_unit_t text_unit);
+
+void refresh_action_task(action_task_t* task);
 
 map_finding_result find_on_map(map_data_t* map, point_t position);
 

@@ -27,4 +27,7 @@ typedef Mibs_Result(text_unit_t) text_getting_result;
 
 text_getting_result get_text_by_id(game_text_t* vec, const char* id);
 
+#define get_text(id) get_text_by_id(&game_ctx->game_text, (id)).value.text.items
+#define get_text_unit(id) get_text_by_id(&game_ctx->game_text, (id)).value
+
 #endif

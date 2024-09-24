@@ -33,6 +33,63 @@ void empty_action(WINDOW* main_window, level_t* level, game_ctx_t* game_ctx, voi
     mibs_file_log(game_ctx->logs, MIBS_LL_ERROR, "Usage of empty action!\n");
 }
 
+void init_tick_timer(tick_timer_t* timer, double border) {
+    timer->sum = 0;
+    timer->border = border;
+}
+
+bool check_tick_timer(tick_timer_t* timer) {
+    return (timer->sum > timer->border) ;
+}
+
+bool add_ticks_to_timer(tick_timer_t* timer, double delta_ticks) {
+    timer->sum += delta_ticks;
+    return check_tick_timer(timer);
+}
+
+void init_action_task(
+    struct action_task_t* task,
+    void* selectable,
+    void* data,
+    bool has_map_task,
+    text_unit_t map_task_name,
+    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, struct action_task_t* task),
+
+    text_unit_t name,
+    text_unit_t description
+) {
+    task->selectable = selectable;
+    task->data = data;
+    task->has_map_task = has_map_task;
+    init_map_task(&task->map_task, map_task_name);
+    task->custom_action = custom_action;
+    task->name = name;
+    task->description = description;
+
+    task->finished = false;
+    task->canceled = false;
+    task->is_selected = false;
+}
+
+void refresh_map_task(map_task_t* task) {
+    task->canceled = false;
+    task->finished = false;
+    task->result.position.x = -1;
+    task->result.position.y = -1;
+}
+
+void init_map_task(map_task_t* task, text_unit_t text_unit) {
+    task->task_name = text_unit;
+    refresh_map_task(task);
+}
+
+void refresh_action_task(action_task_t* task) {
+    task->finished = false;
+    task->canceled = false;
+    if(task->has_map_task)
+        refresh_map_task(&task->map_task);
+}
+
 void center_window(WINDOW* parentwin, WINDOW* subwin) {
     int32_t subwin_x, subwin_y;
     getmaxyx(subwin, subwin_y, subwin_x);
@@ -46,7 +103,7 @@ void center_window(WINDOW* parentwin, WINDOW* subwin) {
     mvderwin(subwin, move_y, move_x);
 }
 
-void exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     loop_ctx->current_level->should_close = true;
     loop_ctx->current_level->next_level_id = LI_NONE;
 }
@@ -73,13 +130,12 @@ void window_to_small() {
 
 void custom_item_init(
     game_ctx_t* game_ctx,
-    custom_item_t* item,
+    action_task_t* item,
     const char* name_id,
     const char* desc_id,
-    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data)
+    void (*custom_action)(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data)
 ) {
     item->is_selected = false;
-    item->is_clicked = false;
     item->name = get_text_by_id(&game_ctx->game_text, name_id).value;
     item->description = get_text_by_id(&game_ctx->game_text, desc_id).value;
     item->custom_action = custom_action;

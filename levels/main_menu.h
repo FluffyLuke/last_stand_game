@@ -7,11 +7,11 @@
 
 // Main menu data
 typedef struct {
-    custom_item_t play_button;
-    custom_item_t options_button;
-    custom_item_t exit_button;
+    action_task_t play_button;
+    action_task_t options_button;
+    action_task_t exit_button;
 
-    custom_item_t* current_button;
+    action_task_t* current_button;
 
     // Button number
     uint8_t bn;
@@ -22,21 +22,21 @@ typedef struct {
     WINDOW* popup_window;
     Game_Speed previous_speed;
 
-    custom_item_t text;
-    custom_item_t confirm_button;
-    custom_item_t return_button;
+    action_task_t text;
+    action_task_t confirm_button;
+    action_task_t return_button;
 
-    custom_item_t* current_button;
+    action_task_t* current_button;
 } ep_data;
 
 #ifdef __LEVELS
 
-void ep_confirm(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void ep_confirm(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     exit_game(loop_ctx, game_ctx, NULL);
     loop_ctx->current_level->should_close = true;
 }
 
-void ep_return(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void ep_return(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     loop_ctx->current_popup->should_close = true;
 }
 
@@ -123,17 +123,17 @@ void close_exit_popup(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     free(loop_ctx->current_popup->data);
 }
 
-void mm_play(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void mm_play(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     loop_ctx->current_level->should_close = true;
     loop_ctx->current_level->next_level_id = LI_MAIN_LEVEL;
 }
 
-void mm_show_options(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void mm_show_options(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     loop_ctx->current_level->should_close = true;
     loop_ctx->current_level->next_level_id = LI_OPTIONS;
 }
 
-void mm_exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, void* data) {
+void mm_exit_game(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t* data) {
     popup_t* popup = (popup_t*)malloc(sizeof(popup_t));
     memset(popup, 0, sizeof(popup_t));
 

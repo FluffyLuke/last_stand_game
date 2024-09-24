@@ -58,15 +58,15 @@ bool load_text(game_text_t* vec, Game_Language lang) {
 
         Mibs_DString id = mibs_ds_from_cstr(&alloc, line.items[0]);
         Mibs_DString text = mibs_ds_from_cstr(&alloc, line.items[1]);
-        //printf("ID: \"%s\"\n", id.items);
-        //printf("TEXT: \"%s\"\n", text.items);
+        printf("ID: \"%s\"\n", id.items);
+        printf("TEXT: \"%s\"\n", text.items);
         text_unit_t gt = {
             .id = id,
             .text = text
         };
         mibs_da_append(&alloc, vec, gt);
 
-        mibs_da_deinit(&alloc, &line);
+        //mibs_da_deinit(&alloc, &line);
     }
 
     return true;

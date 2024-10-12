@@ -21,7 +21,7 @@ typedef struct {
 
 typedef Mibs_Da(text_unit_t) game_text_t;
 
-bool load_text(game_text_t* vec, Game_Language lang);
+bool load_text(const char* game_path, game_text_t* vec, Game_Language lang);
 
 typedef Mibs_Result(text_unit_t) text_getting_result;
 

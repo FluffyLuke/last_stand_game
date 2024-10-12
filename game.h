@@ -94,8 +94,11 @@ typedef struct {
     int32_t y;
 } point_t;
 
+typedef Mibs_Da(point_t) points;
+
 #define point2(n_x, n_y) { .x = (n_x), .y = n_y }
 bool compare_points(point_t point_a, point_t point_b);
+double distance(point_t point_a, point_t point_b);
 
 typedef struct {
     double sum;
@@ -103,6 +106,7 @@ typedef struct {
 } tick_timer_t;
 
 void init_tick_timer(tick_timer_t* timer, double border);
+void refresh_tick_timer(tick_timer_t* timer);
 bool check_tick_timer(tick_timer_t* timer);
 bool add_ticks_to_timer(tick_timer_t* timer, double delta_ticks);
 
@@ -133,6 +137,7 @@ extern const char * const game_difficulty_str[];
 extern WINDOW* input_window;
 
 typedef struct game_ctx_t {
+    const char* game_path;
     Mibs_Default_Allocator alloc;
     FILE* logs;
     uint64_t ticks;
@@ -233,7 +238,9 @@ typedef struct {
 
 typedef enum {
     UT_REACON,
-    UT_SQUAD,
+
+    // Enemies
+    UT_CRAWLER
 } Unit_Type;
 
 typedef struct {
@@ -253,6 +260,7 @@ typedef struct unit_t {
     bool enemy;
 
     move_points path;
+    struct map_data_t* map_data;
 
     int8_t symbol;
     int32_t health;
@@ -260,6 +268,7 @@ typedef struct unit_t {
     int32_t size;
     int32_t sight_range;
     int32_t attack_range;
+    bool fighting;
 
     void (*run_logic)(game_ctx_t* game_ctx, loop_ctx_t* loop_ctx, struct unit_t* unit);
     void (*deinit)(game_ctx_t* game_ctx, struct unit_t* unit);
@@ -267,7 +276,6 @@ typedef struct unit_t {
     game_ctx_t* game_ctx;
 } unit_t;
 
-void create_unit(game_ctx_t* game_ctx, unit_t* unit, Unit_Type type);
 void set_unit_position(unit_t* unit, point_t* new_position);
 void set_unit_positionyx(unit_t* unit, int32_t y, int32_t x);
 
@@ -288,7 +296,7 @@ typedef struct terrain_t {
     bool passable;
 } terrain_t;
 
-typedef struct {
+typedef struct map_data_t {
     units_vec* units;
     buildings_vec* buildings;
 
@@ -297,6 +305,8 @@ typedef struct {
     terrain_t** terrain;
 } map_data_t;
 
+void create_unit(game_ctx_t* game_ctx, map_data_t* map_data, unit_t* unit, Unit_Type type);
+
 typedef struct {
     double x;
     double y;
@@ -304,8 +314,14 @@ typedef struct {
 
 #define vector2(n_x, n_y) { .x = (n_x), .y = n_y }
 
+typedef struct {
+    selectable_t* selectable;
+    map_data_t* map_data;
+} main_level_action_data;
+
 void init_map(map_data_t* map);
 void generate_map(map_data_t* map, int32_t size_y, int32_t size_x);
+points find_path(game_ctx_t* game_ctx, map_data_t* map, point_t start, point_t end);
 void deinit_map(map_data_t* map);
 void add_unit(map_data_t* map, unit_t* unit);
 
@@ -316,6 +332,7 @@ void init_map_task(map_task_t* task, text_unit_t text_unit);
 void refresh_action_task(action_task_t* task);
 
 map_finding_result find_on_map(map_data_t* map, point_t position);
+unit_t* find_closest_unit(map_data_t* map_data, uint32_t lenght, point_t point);
 
 #define map_task(t_n) { .task_name = (t_n), .finished = false, .canceled = false, .point.x = -1, .point.y = -1}
 

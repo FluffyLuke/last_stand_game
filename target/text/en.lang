@@ -36,6 +36,8 @@
 -rc_name~Recon Squad
 -rc_desc~Recon Squad description placeholder
 
+-cr_name~Crawler
+-cr_desc~Crawler description placeholder
 
 # Actions
 

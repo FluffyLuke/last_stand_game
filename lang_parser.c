@@ -13,20 +13,24 @@ void free_game_text(game_text_t* vec) {
     }
 }
 
-bool load_text(game_text_t* vec, Game_Language lang) {
+bool load_text(const char* path, game_text_t* vec, Game_Language lang) {
 
     free_game_text(vec);
+
+    char text_path[1024];
 
     Mibs_Default_Allocator alloc = mibs_make_default_allocator();
     Mibs_Read_File_Result rfr;
 
     switch (lang) {
         case GL_English: {
-            rfr = mibs_read_file(&alloc, "./text/en.lang");
+            sprintf(text_path, "%s/%s", path, "text/en.lang");
+            rfr = mibs_read_file(&alloc, text_path);
             break;
         }
         default: {
-            rfr = mibs_read_file(&alloc, "./text/en.lang");
+            sprintf(text_path, "%s/%s", path, "text/en.lang");
+            rfr = mibs_read_file(&alloc, text_path);
             break;
         }
     }
@@ -58,8 +62,8 @@ bool load_text(game_text_t* vec, Game_Language lang) {
 
         Mibs_DString id = mibs_ds_from_cstr(&alloc, line.items[0]);
         Mibs_DString text = mibs_ds_from_cstr(&alloc, line.items[1]);
-        printf("ID: \"%s\"\n", id.items);
-        printf("TEXT: \"%s\"\n", text.items);
+        //printf("ID: \"%s\"\n", id.items);
+        //printf("TEXT: \"%s\"\n", text.items);
         text_unit_t gt = {
             .id = id,
             .text = text

@@ -40,6 +40,29 @@ typedef struct {
     } map;
 } ml_data;
 
+
+// void init_select_task(game_ctx_t* game_ctx, ml_data* data, action_task_t* task) {
+//     memset(task, 0, sizeof(action_task_t));
+//     task->finished = false;
+//     task->canceled = false;
+//     task->is_selected = false;
+//     task->has_map_task = true;
+    
+//     task->name = get_text_by_id(&game_ctx->game_text, "ml_usa_name").value;
+//     task->description = get_text_by_id(&game_ctx->game_text, "ml_usa_desc").value;
+//     task->custom_action = select_task_action;
+//     task->data = data;
+//     task->selectable = NULL;
+
+//     init_map_task(&task->map_task, get_text_by_id(&game_ctx->game_text, "select_task").value);
+// }
+
+// void deinit_select_task(action_task_t* task) {
+
+// }
+
+#ifdef __LEVELS
+
 void refresh_map_selector(ml_data* data) {
     data->map.selector_x = data->map_w_x / 2;
     data->map.selector_y = data->map_w_y / 2;
@@ -102,29 +125,6 @@ void map_select_action(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx, action_task_t
 
     task->finished = true;
 }
-
-// void init_select_task(game_ctx_t* game_ctx, ml_data* data, action_task_t* task) {
-//     memset(task, 0, sizeof(action_task_t));
-//     task->finished = false;
-//     task->canceled = false;
-//     task->is_selected = false;
-//     task->has_map_task = true;
-    
-//     task->name = get_text_by_id(&game_ctx->game_text, "ml_usa_name").value;
-//     task->description = get_text_by_id(&game_ctx->game_text, "ml_usa_desc").value;
-//     task->custom_action = select_task_action;
-//     task->data = data;
-//     task->selectable = NULL;
-
-//     init_map_task(&task->map_task, get_text_by_id(&game_ctx->game_text, "select_task").value);
-// }
-
-// void deinit_select_task(action_task_t* task) {
-
-// }
-
-#define __LEVELS
-#ifdef __LEVELS
 
 void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     ml_data* data = (ml_data*)malloc(sizeof(ml_data));
@@ -197,9 +197,15 @@ void init_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
     data->map.data = (map_data_t*)malloc(sizeof(map_data_t));
     init_map(data->map.data);
     generate_map(data->map.data, map_size_y, map_size_x);
+
     unit_t* unit = (unit_t*)malloc(sizeof(unit_t));
-	create_unit(game_ctx, unit, UT_REACON);
+	create_unit(game_ctx, data->map.data, unit, UT_REACON);
     set_unit_positionyx(unit, 0, 0);
+    add_unit(data->map.data, unit);
+
+    unit = (unit_t*)malloc(sizeof(unit_t));
+	create_unit(game_ctx, data->map.data, unit, UT_CRAWLER);
+    set_unit_positionyx(unit, 5, 5);
     add_unit(data->map.data, unit);
 
     level->data = data;
@@ -324,6 +330,15 @@ void run_main_level_logic(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
 
     for(int32_t i = 0; i < data->map.data->units->count; i++) {
         unit_t* unit = data->map.data->units->items[i];
+
+        if(unit->health <= 0) {
+            mibs_file_log(game_ctx->logs, MIBS_LL_INFO, "Unit \"%s\" died\n", unit->name.text.items);
+            unit->deinit(game_ctx, unit);
+            free(unit);
+            mibs_da_remove(data->map.data->units, i);
+            i--;
+            continue;
+        }
         unit->run_logic(game_ctx, loop_ctx, unit);
     }
 }
@@ -423,12 +438,17 @@ void render_main_level(loop_ctx_t* loop_ctx, game_ctx_t* game_ctx) {
         if(unit->enemy) color = COLOR_PAIR(CP_ENEMY);
         else color = COLOR_PAIR(CP_ALLY);
 
+
+
         int32_t unit_y = unit->position.y-data->map.offset_y;
         int32_t unit_x = unit->position.x-data->map.offset_x;
 
+    
         wattron(data->map_w, color);
+        if(unit->fighting == true) wattron(data->map_w, A_BLINK);
         mvwprintw(data->map_w, unit_y, unit_x, "%c", unit->symbol);
         wattroff(data->map_w, color);
+        wattroff(data->map_w, A_BLINK);
     }
 
     // Select tool

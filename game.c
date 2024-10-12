@@ -16,6 +16,16 @@
 #include "levels/options.h"
 #include "levels/main_level.h"
 
+const char * const game_difficulty_str[] = {
+    [GD_EASY] = "Easy",
+    [GD_NORMAL] = "Normal",
+    [GD_HARD]  = "Hard"
+};
+
+const char * const game_lang_str[] = {
+    [GL_English] = "English",
+};
+
 // Input window
 WINDOW* input_window;
 
@@ -36,6 +46,10 @@ void empty_action(WINDOW* main_window, level_t* level, game_ctx_t* game_ctx, voi
 void init_tick_timer(tick_timer_t* timer, double border) {
     timer->sum = 0;
     timer->border = border;
+}
+
+void refresh_tick_timer(tick_timer_t* timer) {
+    timer->sum = 0;
 }
 
 bool check_tick_timer(tick_timer_t* timer) {

@@ -10,21 +10,26 @@
 #include "lang_parser.h"
 #include "game.h"
 
-const char * const game_difficulty_str[] = {
-    [GD_EASY] = "Easy",
-    [GD_NORMAL] = "Normal",
-    [GD_HARD]  = "Hard"
-};
-
-const char * const game_lang_str[] = {
-    [GL_English] = "English",
-};
-
 int main(int argc, char** argv) {
     srand(time(NULL));
     setlocale(LC_ALL, "");
 
-    FILE* logs = fopen("logs.txt", "w");
+    char game_path[1024] = {0};
+    memcpy(game_path, argv[0], strlen(argv[0]));
+
+    for(int32_t i = strlen(argv[0])-1; i >= 0; i--) {
+        if(game_path[i] != '/' && game_path[i] != '\\') {
+            game_path[i] = 0;
+        } else {
+            game_path[i] = 0;
+            break;
+        }
+    }
+
+    char logs_path[1024] = {0};
+    memcpy(logs_path, game_path, strlen(game_path));
+    sprintf(logs_path, "%s/%s", game_path, "logs.txt");
+    FILE* logs = fopen(logs_path, "w");
 
     if(logs == NULL) {
         mibs_file_log(stderr, MIBS_LL_ERROR, "Cannot open logs file!\n");
@@ -40,9 +45,10 @@ int main(int argc, char** argv) {
     game_ctx.min_x = MAIN_WINDOW_X;
     game_ctx.min_y = MAIN_WINDOW_Y;
     game_ctx.difficulty = GD_NORMAL;
+    game_ctx.game_path = game_path;
 
     // // Load default text
-    if(!load_text(&game_ctx.game_text, GL_English)) {
+    if(!load_text(game_ctx.game_path, &game_ctx.game_text, GL_English)) {
         mibs_file_log(logs, MIBS_LL_ERROR, "Cannot read game text!\n");
         mibs_file_log(stderr, MIBS_LL_ERROR, "Cannot read game text!\n");
         fclose(logs);
